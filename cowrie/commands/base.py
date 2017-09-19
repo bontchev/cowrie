@@ -1,6 +1,8 @@
 # Copyright (c) 2009 Upi Tamminen <desaster@gmail.com>
 # See the COPYRIGHT file for more information
 
+from __future__ import division, absolute_import
+
 import time
 import datetime
 import functools
@@ -129,7 +131,7 @@ class command_echo(HoneyPotCommand):
             optlist, args = getopt.getopt(self.args, "eEn")
             for opt in optlist:
                 if opt[0] == '-e':
-                    escape_fn = functools.partial(str.decode, encoding="string_escape")
+                    escape_fn = functools.partial(unicode.decode, encoding="string_escape")
                 elif opt[0] == '-E':
                     escape_fn = lambda s: s
                 elif opt[0] == '-n':
@@ -139,8 +141,22 @@ class command_echo(HoneyPotCommand):
 
         # FIXME: Wrap in exception, Python escape cannot handle single digit \x codes (e.g. \x1)
         try:
-            self.write(escape_fn(re.sub('(?<=\\\\)x([0-9a-fA-F]{1})(?=\\\\|\"|\'|\s|$)', 'x0\g<1>',
-                ''.join(args).replace('\\\\x', '\\x')).strip('\"\'')))
+            # replace r'\\x' with r'\x'
+            s = ''.join(args).replace(b'\\\\x', b'\\x')
+
+            # replace single character escape \x0 with \x00
+            s = re.sub('(?<=\\\\)x([0-9a-fA-F])(?=\\\\|\"|\'|\s|$)', 'x0\g<1>', s)
+
+            # strip single and double quotes
+            s = s.strip(b'\"\'')
+
+            # if the string ends with \c escape, strip it and set newline flag to False
+            if s.endswith('\\c'):
+                s = s[:-2]
+                newline = False
+
+            self.write(escape_fn(s))
+
         except ValueError as e:
             log.msg("echo command received Python incorrect hex escape")
 
@@ -149,6 +165,37 @@ class command_echo(HoneyPotCommand):
 
 commands['/bin/echo'] = command_echo
 
+
+class command_printf(HoneyPotCommand):
+    """
+    """
+
+    def call(self):
+        if not len(self.args):
+            self.write('printf: usage: printf [-v var] format [arguments]\n')
+        else:
+            if '-v' not in self.args:
+                if len(self.args) < 2:
+                    escape_fn = functools.partial(unicode.decode, encoding="string_escape")
+
+                    # replace r'\\x' with r'\x'
+                    s = ''.join(self.args[0]).replace(b'\\\\x', b'\\x')
+
+                    # replace single character escape \x0 with \x00
+                    s = re.sub('(?<=\\\\)x([0-9a-fA-F])(?=\\\\|\"|\'|\s|$)', 'x0\g<1>', s)
+
+                    # strip single and double quotes
+                    s = s.strip(b'\"\'')
+
+                    # if the string ends with \c escape, strip it
+                    if s.endswith('\\c'):
+                        s = s[:-2]
+
+                    self.write(escape_fn(s))
+
+
+commands['printf'] = command_printf
+commands['/usr/bin/printf'] = command_printf
 
 
 class command_exit(HoneyPotCommand):

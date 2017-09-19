@@ -5,6 +5,8 @@ Telnet Transport and Authentication for the Honeypot
 @author: Olivier Bilodeau <obilodeau@gosecure.ca>
 """
 
+from __future__ import division, absolute_import
+
 import struct
 import time
 import uuid
@@ -204,7 +206,7 @@ class CowrieTelnetTransport(TelnetTransport, TimeoutMixin):
     """
     """
     def connectionMade(self):
-        self.transportId = uuid.uuid4().hex[:8]
+        self.transportId = uuid.uuid4().hex[:12]
         sessionno = self.transport.sessionno
         self.startTime = time.time()
         self.setTimeout(300)
@@ -226,7 +228,7 @@ class CowrieTelnetTransport(TelnetTransport, TimeoutMixin):
         It is kind of a hack. I asked for a better solution here:
         http://stackoverflow.com/questions/35087250/twisted-telnet-server-how-to-avoid-nested-crlf
         """
-        self.transport.write(bytes.replace('\r\n', '\n'))
+        self.transport.write(bytes.replace(b'\r\n', b'\n'))
 
 
     def connectionLost(self, reason):

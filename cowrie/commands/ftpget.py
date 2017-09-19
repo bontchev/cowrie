@@ -1,25 +1,22 @@
 # -*- coding: utf-8 -*-
-
 # Author: Claud Xiao
 
+from __future__ import division, absolute_import
 
 import os
 import re
 import time
 import getopt
 import hashlib
+import socket
 from ftplib import FTP
+
+from twisted.python import log
 
 from cowrie.core.honeypot import HoneyPotCommand
 from cowrie.core.fs import *
-from twisted.python import log
-
-
-"""
-"""
 
 commands = {}
-
 
 class command_ftpget(HoneyPotCommand):
     """
@@ -31,11 +28,11 @@ Usage: ftpget [OPTIONS] HOST [LOCAL_FILE] REMOTE_FILE
 
 Download a file via FTP
 
-	-c	Continue previous transfer
-	-v	Verbose
-	-u USER	Username
-	-p PASS	Password
-	-P NUM	Port\n\n""")
+    -c	Continue previous transfer
+    -v	Verbose
+    -u USER	Username
+    -p PASS	Password
+    -P NUM	Port\n\n""")
 
     def start(self):
         try:
@@ -124,19 +121,22 @@ Download a file via FTP
             os.remove(self.safeoutfile)
             log.msg("Not storing duplicate content " + shasum)
 
-        log.msg(eventid='cowrie.session.file_download',
-                format='Downloaded URL (%(url)s) with SHA-256 %(shasum)s to %(outfile)s',
-                url=url,
-                outfile=hash_path,
-                shasum=shasum)
+        self.protocol.logDispatch(eventid='cowrie.session.file_download',
+                                  format='Downloaded URL (%(url)s) with SHA-256 %(shasum)s to %(outfile)s',
+                                  url=url,
+                                  outfile=hash_path,
+                                  shasum=shasum)
 
         # Link friendly name to hash
-        os.symlink(shasum, self.safeoutfile)
+        # os.symlink(shasum, self.safeoutfile)
 
         self.safeoutfile = None
 
         # Update the honeyfs to point to downloaded file
+        self.fs.mkfile(fakeoutfile, 0, 0, os.path.getsize(hash_path), 33188)
         self.fs.update_realfile(self.fs.getfile(fakeoutfile), hash_path)
+        self.fs.chown(fakeoutfile, self.protocol.user.uid, self.protocol.user.gid)
+
         self.exit()
 
     def ftp_download(self, safeoutfile):
@@ -170,7 +170,10 @@ Download a file via FTP
         except Exception as e:
             log.msg('FTP login failed: user=%s, passwd=%s, err=%s' % (self.username, self.password, str(e)))
             self.write('ftpget: unexpected server response to USER: %s\n' % str(e))
-            ftp.quit()
+            try:
+                ftp.quit()
+            except socket.timeout:
+                pass
             return False
 
         # download
@@ -186,7 +189,10 @@ Download a file via FTP
         except Exception as e:
             log.msg('FTP retrieval failed: %s' % str(e))
             self.write('ftpget: unexpected server response to USER: %s\n' % str(e))
-            ftp.quit()
+            try:
+                ftp.quit()
+            except socket.timeout:
+                pass
             return False
 
         # quit
@@ -194,7 +200,11 @@ Download a file via FTP
             self.write('ftpget: cmd (null) (null)\n')
             self.write('ftpget: cmd QUIT (null)\n')
 
-        ftp.quit()
+        try:
+            ftp.quit()
+        except socket.timeout:
+            pass
+        
         return True
 
 

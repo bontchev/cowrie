@@ -5,6 +5,8 @@
 This module contains ...
 """
 
+from __future__ import division, absolute_import
+
 import os
 import time
 import hashlib
@@ -22,6 +24,7 @@ class LoggingServerProtocol(insults.ServerProtocol):
     """
     stdinlogOpen = False
     ttylogOpen = False
+    redirlogOpen = False  # it will be set at core/protocol.py
 
     def __init__(self, prot=None, *a, **kw):
         insults.ServerProtocol.__init__(self, prot, *a, **kw)
@@ -118,7 +121,10 @@ class LoggingServerProtocol(insults.ServerProtocol):
             ttylog.ttylog_write(self.ttylogFile, len(data),
                 ttylog.TYPE_INPUT, time.time(), data)
 
-        insults.ServerProtocol.dataReceived(self, data)
+        # prevent crash if something like this was passed:
+        # echo cmd ; exit; \n\n
+        if self.terminalProtocol:
+            insults.ServerProtocol.dataReceived(self, data)
 
 
     def eofReceived(self):
@@ -151,7 +157,7 @@ class LoggingServerProtocol(insults.ServerProtocol):
                         log.msg("Not storing duplicate content " + shasum)
                     else:
                         os.rename(self.stdinlogFile, shasumfile)
-                    os.symlink(shasum, self.stdinlogFile)
+                    # os.symlink(shasum, self.stdinlogFile)
                 log.msg(eventid='cowrie.session.file_download',
                         format='Saved stdin contents with SHA-256 %(shasum)s to %(outfile)s',
                         url='stdin',
@@ -163,7 +169,15 @@ class LoggingServerProtocol(insults.ServerProtocol):
                 self.stdinlogOpen = False
 
         if self.redirFiles:
-            for rf in self.redirFiles:
+            for rp in self.redirFiles:
+
+                rf = rp[0]
+
+                if rp[1]:
+                    url = rp[1]
+                else:
+                    url = rf[rf.find('redir_')+len('redir_'):]
+
                 try:
                     if not os.path.exists(rf):
                         continue
@@ -180,10 +194,10 @@ class LoggingServerProtocol(insults.ServerProtocol):
                             log.msg("Not storing duplicate content " + shasum)
                         else:
                             os.rename(rf, shasumfile)
-                        os.symlink(shasum, rf)
+                        # os.symlink(shasum, rf)
                     log.msg(eventid='cowrie.session.file_download',
                             format='Saved redir contents with SHA-256 %(shasum)s to %(outfile)s',
-                            url='redir',
+                            url=url,
                             outfile=shasumfile,
                             shasum=shasum)
                 except IOError:

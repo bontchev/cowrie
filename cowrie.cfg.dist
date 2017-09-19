@@ -89,6 +89,12 @@ txtcmds_path = txtcmds
 ttylog = true
 
 
+# Interactive timeout determines when logged in sessions are
+# terminated for being idle. In seconds.
+# (default: 180)
+interactive_timeout = 180
+
+
 
 # ============================================================================
 # Network Specific Options
@@ -217,6 +223,7 @@ version = SSH-2.0-OpenSSH_6.0p1 Debian-4+deb7u2
 
 
 # IP addresses to listen for incoming SSH connections.
+# (DEPRECATED: use listen_endpoints instead)
 #
 # (default: 0.0.0.0) = any IPv4 address
 #listen_addr = 0.0.0.0
@@ -225,12 +232,23 @@ version = SSH-2.0-OpenSSH_6.0p1 Debian-4+deb7u2
 
 
 # Port to listen for incoming SSH connections.
+# (DEPRECATED: use listen_endpoints instead)
 #
 # (default: 2222)
 #listen_port = 2222
 
 
-# sftp_enabled enables the sftp subsystem
+# Endpoint to listen on for incoming SSH connections.
+# See https://twistedmatrix.com/documents/current/core/howto/endpoints.html#servers
+# (default: listen_endpoints = tcp:2222:interface=0.0.0.0)
+# (use systemd: endpoint for systemd activation)
+# listen_endpoints = systemd:domain=INET:index=0
+# For both IPv4 and IPv6: listen_endpoints = tcp6:2222:interface=\:\:
+listen_endpoints = tcp:2222:interface=0.0.0.0
+
+
+# Enable the SFTP subsystem
+# (default: true)
 sftp_enabled = true
 
 
@@ -249,14 +267,14 @@ forward_redirect = false
 # forward_redirect_<portnumber> = <redirect ip>:<redirect port>
 
 # Redirect http/https
-forward_redirect_80 = 127.0.0.1:8000
-forward_redirect_443 = 127.0.0.1:8443
+# forward_redirect_80 = 127.0.0.1:8000
+# forward_redirect_443 = 127.0.0.1:8443
 
 # To record SMTP traffic, install an SMTP honeypoint.
 # (e.g https://github.com/awhitehatter/mailoney), run
 # python mailoney.py -s yahoo.com -t schizo_open_relay -p 12525
-forward_redirect_25 = 127.0.0.1:12525
-forward_redirect_587 = 127.0.0.1:12525
+# forward_redirect_25 = 127.0.0.1:12525
+# forward_redirect_587 = 127.0.0.1:12525
 
 
 
@@ -269,6 +287,7 @@ forward_redirect_587 = 127.0.0.1:12525
 enabled = false
 
 # IP addresses to listen for incoming Telnet connections.
+# (DEPRECATED: use listen_endpoints instead)
 #
 # (default: 0.0.0.0) = any IPv4 address
 #listen_addr = 0.0.0.0
@@ -277,9 +296,20 @@ enabled = false
 
 
 # Port to listen for incoming Telnet connections.
+# (DEPRECATED: use listen_endpoints instead)
 #
 # (default: 2223)
 #listen_port = 2223
+
+
+# Endpoint to listen on for incoming Telnet connections.
+# See https://twistedmatrix.com/documents/current/core/howto/endpoints.html#servers
+# (default: listen_endpoints = tcp:2223:interface=0.0.0.0)
+# (use systemd: endpoint for systemd activation)
+# listen_endpoints = systemd:domain=INET:index=0
+# For IPv4 and IPv6: listen_endpoints = tcp6:2223:interface=\:\: tcp:2223:interface=0.0.0.0
+listen_endpoints = tcp:2223:interface=0.0.0.0
+
 
 # Source Port to report in logs (useful if you use iptables to forward ports to Cowrie)
 #reported_port = 23
@@ -451,6 +481,15 @@ logfile = log/cowrie.json
 #api_key = 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 #
 
+# Cuckoo output module
+#[output_cuckoo]
+# no slash at the end
+#url_base = http://127.0.0.1:8090
+#user = user
+#passwd = passwd
+# force will upload duplicated files to cuckoo
+#force = 0
+
 #[output_slack]
 # This will produce a _lot_ of messages - you have been warned....
 #channel = channel_that_events_should_be_posted_in
@@ -466,3 +505,8 @@ logfile = log/cowrie.json
 #feed=scanners
 #description=random scanning activity
 #token=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+
+#[output_socketlog]
+#address = 127.0.0.1:9000
+#timeout = 5

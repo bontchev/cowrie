@@ -6,6 +6,8 @@
 This module contains ...
 """
 
+from __future__ import division, absolute_import
+
 import os
 import sys
 import time
@@ -86,7 +88,12 @@ class HoneyPotBaseProtocol(insults.TerminalProtocol, TimeoutMixin):
         self.realClientPort = pt.transport.getPeer().port
         self.clientVersion = self.getClientVersion()
         self.logintime = time.time()
-        self.setTimeout(180)
+
+        try:
+            timeout = self.cfg.getint('honeypot', 'interactive_timeout')
+        except:
+            timeout = 180
+        self.setTimeout(timeout)
 
         # Source IP of client in user visible reports (can be fake or real)
         try:
@@ -202,9 +209,7 @@ class HoneyPotBaseProtocol(insults.TerminalProtocol, TimeoutMixin):
         obj.set_input_data(pp.input_data)
         self.cmdstack.append(obj)
         obj.start()
-        if hasattr(obj, 'safeoutfile'):
-            if obj.safeoutfile:
-                self.terminal.redirFiles.add(obj.safeoutfile)
+
         if self.pp:
             self.pp.outConnectionLost()
 

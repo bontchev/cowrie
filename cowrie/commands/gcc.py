@@ -1,5 +1,7 @@
 # Copyright (c) 2013 Bas Stottelaar <basstottelaar [AT] gmail [DOT] com>
 
+from __future__ import division, absolute_import
+
 import time
 import re
 import getopt
@@ -189,6 +191,7 @@ gcc version %s (Debian %s-5)""" % (version, version_short, version_short, versio
         # Create file for the protocol
         self.fs.mkfile(outfile, 0, 0, len(data), 33188)
         self.fs.update_realfile(self.fs.getfile(outfile), safeoutfile)
+        self.fs.chown(outfile, self.protocol.user.uid, self.protocol.user.gid)
 
         # Segfault command
         class segfault_command(HoneyPotCommand):

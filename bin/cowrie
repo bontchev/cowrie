@@ -1,11 +1,17 @@
 #!/bin/bash
+#Change the below to yes if you are using authbind to listen to port 22
 AUTHBIND_ENABLED=no
+
+#Change the below to yes to activate the "cowrie-env" virtual environment
+VIRTUALENV_ENABLED=yes
+
 #Change the below to -n to disable daemonizing (for instance when using supervisor)
 DAEMONIZE=""
 
 ################################################################################
-## dont' modify below here ##
+## don't modify below here ##
 ################################################################################
+
 
 find_cowrie_directory() {
     # Determine Cowrie directory
@@ -37,36 +43,69 @@ activate_venv() {
 
 cowrie_status() {
     # Print status
-    PID=$(cat ${PIDFILE} 2>/dev/null)
+    PID=$(cat ${PIDFILE} 2>/dev/null || echo "")
+    if [ -n "$PID" ]; then
+        if ps -p "$PID" 2>&1 >/dev/null; then
+            echo "cowrie is running (PID: ${PID})."
+        else
+            echo "cowrie is not running (PID: ${PID})."
+            echo "Removing stale PID file"
+            rm -f ${PIDFILE}
+        fi
+    else
+        echo "cowrie is not running."
+    fi
 }
 
 cowrie_start() {
     # Start Cowrie
-    activate_venv "cowrie-env"
-    echo "Starting cowrie with extra arguments [$XARGS $DAEMONIZE] ..."
-    if [ $AUTHBIND_ENABLED = "no" ]
+    COWRIEARGS="$*"
+    TWISTEDARGS="${DAEMONIZE} ${XARGS} --umask 0077 --pidfile ${PIDFILE}"
+
+    # For Docker log to stdout, for non-Docker log to file
+    if [ "$DOCKER" = "yes" ]
     then
-        twistd $XARGS $DAEMONIZE -l log/cowrie.log --umask 0077 --pidfile ${PIDFILE} cowrie
+        TWISTEDARGS="${TWISTEDARGS} -l -"
     else
-        authbind --deep twistd $XARGS -l log/cowrie.log --umask 0077 --pidfile ${PIDFILE} cowrie
+        TWISTEDARGS="${TWISTEDARGS} -l log/cowrie.log"
+    fi
+
+    if [ "$VIRTUALENV_ENABLED" = "yes" ]
+    then
+        activate_venv "cowrie-env"
+    fi
+
+    echo "Starting cowrie: [twistd ${TWISTEDARGS} cowrie ${COWRIEARGS}]..."
+    if [ "$AUTHBIND_ENABLED" = "no" ]
+    then
+        twistd ${TWISTEDARGS} ${COWRIEARGS} cowrie
+    else
+        authbind --deep twistd ${TWISTEDARGS} ${COWRIEARGS} cowrie
     fi
 }
 
 cowrie_stop () {
     # Stop Cowrie
-    PID=$(cat ${PIDFILE} 2>/dev/null)
+    PID=$(cat ${PIDFILE} 2>/dev/null || echo "")
     if [ -n "$PID" ]; then
       echo "Stopping cowrie..."
-      kill -TERM $PID
+      if kill -TERM $PID; then
+          echo -n
+      else
+          echo "Removing stale PID file"
+          rm -f ${PIDFILE}
+      fi
+    else
+        echo "cowrie is not running."
     fi
 }
 
 cowrie_usage() {
-    echo "usage: $0 <start|stop>"
+    echo "usage: $0 <start|stop|status>"
 }
 
 ################################################################################
-## Main script 
+## Main script
 ################################################################################
 
 if [ "$#" = 0 ]
@@ -81,22 +120,20 @@ export PYTHONPATH=${PYTHONPATH}:${COWRIEDIR}
 PIDFILE=var/run/cowrie.pid
 set -e
 
-for key in "$@"
-do
-    key=$1
-    case $key in 
-        stop)
-            cowrie_stop
-            ;;
-        start)
-            cowrie_start
-            ;;
-        status)
-            cowrie_status
-            ;;
-        *)
-            cowrie_usage
-            exit 1
-            ;;
-    esac
-done
+key=$1
+shift 1
+case $key in
+    stop)
+        cowrie_stop $*
+        ;;
+    start)
+        cowrie_start $*
+        ;;
+    status)
+        cowrie_status $*
+        ;;
+    *)
+        cowrie_usage
+        exit 1
+        ;;
+esac

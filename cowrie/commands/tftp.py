@@ -1,5 +1,7 @@
 #
 
+from __future__ import division, absolute_import
+
 import time
 import re
 import tftpy
@@ -67,12 +69,16 @@ class command_tftp(HoneyPotCommand):
         try:
             tclient = tftpy.TftpClient(self.hostname, int(self.port))
             tclient.download(self.file_to_get, self.safeoutfile, progresshook)
+
+            url = 'tftp://%s/%s' % (self.hostname, self.file_to_get.strip('/'))
+
             self.file_to_get = self.fs.resolve_path(self.file_to_get, self.protocol.cwd)
+
             if hasattr(tclient.context, 'metrics'):
                 self.fs.mkfile(self.file_to_get, 0, 0, tclient.context.metrics.bytes, 33188)
             else:
                 self.fs.mkfile(self.file_to_get, 0, 0, 0, 33188)
-            self.fs.update_realfile(self.fs.getfile(self.file_to_get), self.safeoutfile)
+
         except tftpy.TftpException as err:
             if tclient and tclient.context and not tclient.context.fileobj.closed:
                 tclient.context.fileobj.close()
@@ -95,21 +101,20 @@ class command_tftp(HoneyPotCommand):
                 os.remove(self.safeoutfile)
                 log.msg("Not storing duplicate content " + shasum)
 
-            url = 'tftp://%s/%s' % (self.hostname, self.file_to_get.strip('/'))
-
-            log.msg(eventid='cowrie.session.file_download',
-                    format='Downloaded tftpFile (%(url)s) with SHA-256 %(shasum)s to %(outfile)s',
-                    url=url,
-                    outfile=hash_path,
-                    shasum=shasum)
+            self.protocol.logDispatch(eventid='cowrie.session.file_download',
+                                      format='Downloaded tftpFile (%(url)s) with SHA-256 %(shasum)s to %(outfile)s',
+                                      url=url,
+                                      outfile=hash_path,
+                                      shasum=shasum)
 
             # Link friendly name to hash
-            os.symlink(shasum, self.safeoutfile)
+            # os.symlink(shasum, self.safeoutfile)
 
             self.safeoutfile = None
 
             # Update the honeyfs to point to downloaded file
             self.fs.update_realfile(self.fs.getfile(self.file_to_get), hash_path)
+            self.fs.chown(self.file_to_get, self.protocol.user.uid, self.protocol.user.gid)
             self.exit()
 
 

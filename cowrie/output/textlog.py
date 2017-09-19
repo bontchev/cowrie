@@ -26,6 +26,8 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
+from __future__ import division, absolute_import
+
 from twisted.python import log
 
 import cowrie.core.output
@@ -38,7 +40,7 @@ class Output(cowrie.core.output.Output):
         """
         cowrie.core.output.Output.__init__(self, cfg)
         self.format = cfg.get('output_textlog', 'format')
-        self.outfile = file(cfg.get('output_textlog', 'logfile'), 'a')
+        self.outfile = open(cfg.get('output_textlog', 'logfile'), 'a')
 
 
     def start(self):

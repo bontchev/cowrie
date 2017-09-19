@@ -5,6 +5,8 @@
 This module contains ...
 """
 
+from __future__ import division, absolute_import
+
 import os
 import re
 import stat
@@ -62,7 +64,7 @@ class HoneyPotCommand(object):
                     self.safeoutfile = None
 
                 else:
-                    with open(self.safeoutfile, 'a'):
+                    with open(self.safeoutfile, 'ab'):
                         self.fs.update_realfile(self.fs.getfile(self.outfile), self.safeoutfile)
             else:
                 self.safeoutfile = p[fs.A_REALFILE]
@@ -90,7 +92,7 @@ class HoneyPotCommand(object):
     def write_to_file(self, data):
         """
         """
-        with open(self.safeoutfile, 'a') as f:
+        with open(self.safeoutfile, 'ab') as f:
             f.write(data)
         self.writtenBytes += len(data)
         self.fs.update_size(self.outfile, self.writtenBytes)
@@ -120,6 +122,12 @@ class HoneyPotCommand(object):
         Sometimes client is disconnected and command exits after. So cmdstack is gone
         """
         try:
+            if self.protocol and self.protocol.terminal and hasattr(self, 'safeoutfile') and self.safeoutfile:
+                if hasattr(self, 'outfile') and self.outfile:
+                    self.protocol.terminal.redirFiles.add((self.safeoutfile, self.outfile))
+                else:
+                    self.protocol.terminal.redirFiles.add((self.safeoutfile, ''))
+
             self.protocol.cmdstack.pop()
             if len(self.protocol.cmdstack):
                 self.protocol.cmdstack[-1].resume()
@@ -141,7 +149,9 @@ class HoneyPotCommand(object):
         """
         log.msg('QUEUED INPUT: {}'.format(line))
         # FIXME: naive command parsing, see lineReceived below
-        self.protocol.cmdstack[0].cmdpending.append(shlex.split(line))
+        line = b"".join(line)
+        line = line.decode("utf-8")
+        self.protocol.cmdstack[0].cmdpending.append(shlex.split(line,posix=False))
 
 
     def resume(self):
@@ -184,6 +194,8 @@ class HoneyPotShell(object):
         """
         """
         log.msg(eventid='cowrie.command.input', input=line, format='CMD: %(input)s')
+        line = b"".join(line)
+        line = line.decode("utf-8")
         self.lexer = shlex.shlex(instream=line, punctuation_chars=True)
         tokens = []
         while True:
@@ -241,7 +253,6 @@ class HoneyPotShell(object):
                 self.cmdpending = []
                 self.showPrompt()
                 return
-
         if len(self.cmdpending):
             self.runCommand()
         else:
@@ -540,7 +551,8 @@ class StdOutStdErrEmulationProtocol(object):
     def errReceived(self, data):
         """
         """
-        self.protocol.terminal.write(data)
+        if self.protocol and self.protocol.terminal:
+            self.protocol.terminal.write(data)
         self.err_data = self.err_data + data
 
 

@@ -20,6 +20,8 @@ or:
 
 """
 
+from __future__ import division, absolute_import
+
 import hashlib
 import os
 import re
@@ -82,11 +84,11 @@ class Artifact:
         else:
             os.rename(self.fp.name, shasumFilename)
 
-        if size>0:
-            linkName = self.artifactDir + "/" \
-                + time.strftime('%Y%m%dT%H%M%S') \
-                + "_" + re.sub('[^-A-Za-z0-9]', '_', self.label)
-            os.symlink(shasum, linkName)
+        # if size>0:
+        #    linkName = self.artifactDir + "/" \
+        #        + time.strftime('%Y%m%dT%H%M%S') \
+        #        + "_" + re.sub('[^-A-Za-z0-9]', '_', self.label)
+        #    os.symlink(shasum, linkName)
 
         return shasum, shasumFilename
 

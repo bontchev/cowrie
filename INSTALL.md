@@ -4,23 +4,22 @@
 * [Step 1: Install dependencies](#step-1-install-dependencies)
 * [Step 2: Create a user account](#step-2-create-a-user-account)
 * [Step 3: Checkout the code](#step-3-checkout-the-code)
-* [Step 4: Setup Virtual Environment](#step-3-setup-virtual-environment)
-* [Step 5: Install configuration file](#step-4-install-configuration-file)
-* [Step 6: Generate a DSA key](#step-5-generate-a-dsa-key)
-* [Step 7: Turning on cowrie](#step-6-turning-on-cowrie)
-* [Step 8: Port redirection (optional)](#step-7-port-redirection-optional)
+* [Step 4: Setup Virtual Environment](#step-4-setup-virtual-environment)
+* [Step 5: Install configuration file](#step-5-install-configuration-file)
+* [Step 6: Generate a DSA key](#step-6-generate-a-dsa-key)
+* [Step 7: Turning on cowrie](#step-7-turning-on-cowrie)
+* [Step 8: Port redirection (optional)](#step-8-port-redirection-optional)
 * [Running within supervisord(optional)](#running-using-supervisord)
 * [Troubleshooting](#troubleshooting)
-* [Installing on MacOS for development](#installing-on-macos-for-development)
 
 ## Step 1: Install dependencies
 
 First we install support for Python virtual environments and other dependencies.
 The actual Python packages are installed later.
 
-On Debian based systems (tested on Debian 8, 2016-08-30):
+On Debian based systems (last verified on Debian 9, 2017-07-25):
 ```
-$ sudo apt-get install git python-virtualenv libmpfr-dev libssl-dev libmpc-dev libffi-dev build-essential libpython-dev python2.7-minimal authbind
+$ sudo apt-get install git python-virtualenv libssl-dev libffi-dev build-essential libpython-dev python2.7-minimal authbind
 ```
 
 ## Step 2: Create a user account
@@ -80,15 +79,22 @@ $ source cowrie-env/bin/activate
 
 ## Step 5: Install configuration file
 
-Take a look at the configuration file and make changes as desired.  The defaults work well in most cases.
+The configuration for Cowrie is stored in cowrie.cfg.dist and
+cowrie.cfg. Both files are read, where entries from cowrie.cfg take
+precedence. The .dist file can be overwritten on upgrades, cowrie.cfg
+will not be changed. To run with a standard configuration, there
+is no need to change anything. To enable telnet, for example, create
+cowrie.cfg and input only the following:
+
 ```
-$ cp cowrie.cfg.dist cowrie.cfg
+[telnet]
+enabled = true
 ```
 
 ## Step 6: Generate a DSA key
 
 This step should not be necessary, however some versions of twisted
-are not compatible.  To avoid problems in advance, run:
+are not compatible. To avoid problems in advance, run:
 
 ```
 $ cd data
@@ -100,7 +106,7 @@ $ cd ..
 
 Cowrie is implemented as a module for Twisted, but to properly
 import everything the top-level source directory needs to be in
-python's os.path.  This sometimes won't happen correctly, so make
+python's os.path. This sometimes won't happen correctly, so make
 it explicit:
 
 ```
@@ -129,7 +135,7 @@ $ sudo iptables -t nat -A PREROUTING -p tcp --dport 22 -j REDIRECT --to-port 222
 ```
 
 Note that you should test this rule only from another host; it
-doesn't apply to loopback connections.  Alternatively you can run
+doesn't apply to loopback connections. Alternatively you can run
 authbind to listen as non-root on port 22 directly:
 
 ```
@@ -172,44 +178,11 @@ Update the bin/cowrie script, change:
 
 ## Troubleshooting
 
-* For some versions of Twisted you may receive the following error messages:
-
-```
-....
-  File "/usr/lib/python2.7/site-packages/Crypto/PublicKey/DSA.py", line 342, in _generate
-      key = self._math.dsa_construct(obj.y, obj.g, obj.p, obj.q, obj.x)
-      TypeError: must be long, not mpz
-```
-
-This is caused by Twisted incompatibilities. A workaround is to run:
-
-```
-$ cd cowrie/data
-$ ssh-keygen -t dsa -b 1024 -f ssh_host_dsa_key
-```
-
-* If there are issues creating the RSA keys, the following is a workaround:
-
-```
-$ cd cowrie/data
-$ ssh-keygen -t rsa -b 2048 -f ssh_host_rsa_key
-```
-
 * If you see `twistd: Unknown command: cowrie` there are two
-possibilities.  If there's a python stack trace, it probably means
-there's a missing or broken dependency.  If there's no stack trace,
+possibilities. If there's a python stack trace, it probably means
+there's a missing or broken dependency. If there's no stack trace,
 double check that your PYTHONPATH is set to the source code directory.
 * Default file permissions
 
 To make Cowrie logfiles public readable, change the ```--umask 0077``` option in start.sh into ```--umask 0022```
 
-## Installing on MacOS for development
-
-gmpy2 requires a number of libraries which are not included by default with MacOS Sierra and must be installed, suggested method is by using [homebrew](http://brew.sh/)
-
-```
-brew install gmp
-brew install mpfr
-brew install mpc
-brew install libmpc
-```

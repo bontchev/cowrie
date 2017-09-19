@@ -5,6 +5,8 @@
 This module contains ...
 """
 
+from __future__ import division, absolute_import
+
 import os
 import time
 import fnmatch
@@ -24,14 +26,14 @@ A_NAME, \
     A_CTIME, \
     A_CONTENTS, \
     A_TARGET, \
-    A_REALFILE = range(0, 10)
+    A_REALFILE = list(range(0, 10))
 T_LINK, \
     T_DIR, \
     T_FILE, \
     T_BLK, \
     T_CHR, \
     T_SOCK, \
-    T_FIFO = range(0, 7)
+    T_FIFO = list(range(0, 7))
 
 class TooManyLevels(Exception):
     """
@@ -87,6 +89,7 @@ class HoneyPotFilesystem(object):
 
     def resolve_path(self, path, cwd):
         """
+        This function does not need to be in this class, it has no dependencies
         """
         pieces = path.rstrip('/').split('/')
 
@@ -111,6 +114,7 @@ class HoneyPotFilesystem(object):
 
     def resolve_path_wc(self, path, cwd):
         """
+        Resolve_path with wildcard support (globbing)
         """
         pieces = path.rstrip('/').split('/')
         if len(pieces[0]):
@@ -234,7 +238,7 @@ class HoneyPotFilesystem(object):
         if f[A_TYPE] == T_DIR:
             raise IsADirectoryError
         elif f[A_TYPE] == T_FILE and f[A_REALFILE]:
-            return file(f[A_REALFILE], 'rb').read()
+            return open(f[A_REALFILE], 'rb').read()
         elif f[A_TYPE] == T_FILE and f[A_SIZE] == 0:
             # Zero-byte file lacking A_REALFILE backing: probably empty.
             # (The exceptions to this are some system files in /proc and /sys,
@@ -388,7 +392,7 @@ class HoneyPotFilesystem(object):
                 os.remove(self.tempfiles[fd])
             else:
                 os.rename(self.tempfiles[fd], shasumfile)
-            os.symlink(shasum, self.tempfiles[fd])
+            #os.symlink(shasum, self.tempfiles[fd])
             self.update_realfile(self.getfile(self.filenames[fd]), shasumfile)
             log.msg(format='SFTP Uploaded file \"%(filename)s\" to %(outfile)s',
                     eventid='cowrie.session.file_upload',
