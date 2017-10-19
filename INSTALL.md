@@ -139,16 +139,16 @@ doesn't apply to loopback connections. Alternatively you can run
 authbind to listen as non-root on port 22 directly:
 
 ```
-$ apt-get install authbind
-$ touch /etc/authbind/byport/22
-$ chown cowrie:cowrie /etc/authbind/byport/22
-$ chmod 770 /etc/authbind/byport/22
+$ sudo apt-get install authbind
+$ sudo touch /etc/authbind/byport/22
+$ sudo chown cowrie:cowrie /etc/authbind/byport/22
+$ sudo chmod 770 /etc/authbind/byport/22
 ```
 
 Or for telnet:
 
 ```
-$ apt-get install authbind
+$ sudo apt-get install authbind
 $ sudo touch /etc/authbind/byport/23
 $ sudo chown cowrie:cowrie /etc/authbind/byport/23
 $ sudo chmod 770 /etc/authbind/byport/23
