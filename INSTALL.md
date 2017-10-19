@@ -91,6 +91,16 @@ cowrie.cfg and input only the following:
 enabled = true
 ```
 
+Optional: Download the geolocation database from Maxmind (currently used
+only when logging to a MySQL database):
+
+```
+$ cd data
+$ wget http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz
+$ gzip -df GeoLite2-City.mmdb.gz
+$ cd ..
+```
+
 ## Step 6: Generate a DSA key
 
 This step should not be necessary, however some versions of twisted
