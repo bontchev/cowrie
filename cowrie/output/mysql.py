@@ -118,57 +118,54 @@ class Output(cowrie.core.output.Output):
                 sensorid = int(r[0][0])
             self.simpleQuery(
                 "INSERT INTO `sessions` (`id`, `starttime`, `sensor`, `ip`)"
-                +  " VALUES (%s, STR_TO_DATE(%s, %s), %s, %s)",
-                (entry["session"], entry["timestamp"], '%Y-%m-%dT%H:%i:%s.%fZ',
-                    sensorid, entry["src_ip"]))
+                +  " VALUES (%s, FROM_UNIXTIME(%s), %s, %s)",
+                (entry["session"], entry["time"], sensorid, entry["src_ip"]))
 
         elif entry["eventid"] == 'cowrie.login.success':
             self.simpleQuery('INSERT INTO `auth` (`session`, `success`' + \
                 ', `username`, `password`, `timestamp`)' + \
-                ' VALUES (%s, %s, %s, %s, STR_TO_DATE(%s, %s))',
+                ' VALUES (%s, %s, %s, %s, FROM_UNIXTIME(%s))',
                 (entry["session"], 1, entry['username'], entry['password'],
-                entry["timestamp"], '%Y-%m-%dT%H:%i:%s.%fZ'))
+                entry["time"]))
 
         elif entry["eventid"] == 'cowrie.login.failed':
             self.simpleQuery('INSERT INTO `auth` (`session`, `success`' + \
                 ', `username`, `password`, `timestamp`)' + \
-                ' VALUES (%s, %s, %s, %s, STR_TO_DATE(%s, %s))',
+                ' VALUES (%s, %s, %s, %s, FROM_UNIXTIME(%s))',
                 (entry["session"], 0, entry['username'], entry['password'],
-                entry["timestamp"], '%Y-%m-%dT%H:%i:%s.%fZ'))
+                entry["time"]))
 
         elif entry["eventid"] == 'cowrie.command.success':
             self.simpleQuery('INSERT INTO `input`' + \
                 ' (`session`, `timestamp`, `success`, `input`)' + \
-                ' VALUES (%s, STR_TO_DATE(%s, %s), %s , %s)',
-                (entry["session"], entry["timestamp"], '%Y-%m-%dT%H:%i:%s.%fZ',
-                1, entry["input"]))
+                ' VALUES (%s, FROM_UNIXTIME(%s), %s , %s)',
+                (entry["session"], entry["time"], 1, entry["input"]))
 
         elif entry["eventid"] == 'cowrie.command.failed':
             self.simpleQuery('INSERT INTO `input`' + \
                 ' (`session`, `timestamp`, `success`, `input`)' + \
-                ' VALUES (%s, STR_TO_DATE(%s, %s), %s , %s)',
-                (entry["session"], entry["timestamp"], '%Y-%m-%dT%H:%i:%s.%fZ',
-                0, entry["input"]))
+                ' VALUES (%s, FROM_UNIXTIME(%s), %s , %s)',
+                (entry["session"], entry["time"], 0, entry["input"]))
 
         elif entry["eventid"] == 'cowrie.session.file_download':
             self.simpleQuery('INSERT INTO `downloads`' + \
                 ' (`session`, `timestamp`, `url`, `outfile`, `shasum`)' + \
-                ' VALUES (%s, STR_TO_DATE(%s, %s), %s, %s, %s)',
-                (entry["session"], entry["timestamp"], '%Y-%m-%dT%H:%i:%s.%fZ',
+                ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s)',
+                (entry["session"], entry["time"],
                 entry['url'], entry['outfile'], entry['shasum']))
 
         elif entry["eventid"] == 'cowrie.session.file_upload':
             self.simpleQuery('INSERT INTO `downloads`' + \
                 ' (`session`, `timestamp`, `url`, `outfile`, `shasum`)' + \
-                ' VALUES (%s, STR_TO_DATE(%s, %s), %s, %s)',
-                (entry["session"], entry["timestamp"], '%Y-%m-%dT%H:%i:%s.%fZ',
+                ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s)',
+                (entry["session"], entry["time"],
                 '', entry['outfile'], entry['shasum']))
 
         elif entry["eventid"] == 'cowrie.session.input':
             self.simpleQuery('INSERT INTO `input`' + \
                 ' (`session`, `timestamp`, `realm`, `input`)' + \
-                ' VALUES (%s, STR_TO_DATE(%s, %s), %s , %s)',
-                (entry["session"], entry["timestamp"], '%Y-%m-%dT%H:%i:%s.%fZ',
+                ' VALUES (%s, FROM_UNIXTIME(%s), %s , %s)',
+                (entry["session"], entry["time"],
                 entry["realm"], entry["input"]))
 
         elif entry["eventid"] == 'cowrie.client.version':
@@ -195,9 +192,8 @@ class Output(cowrie.core.output.Output):
 
         elif entry["eventid"] == 'cowrie.session.closed':
             self.simpleQuery(
-                'UPDATE `sessions` SET `endtime` = STR_TO_DATE(%s, %s)' + \
-                ' WHERE `id` = %s', (entry["timestamp"],
-                    '%Y-%m-%dT%H:%i:%s.%fZ', entry["session"]))
+                'UPDATE `sessions` SET `endtime` = FROM_UNIXTIME(%s)' + \
+                ' WHERE `id` = %s', (entry["time"], entry["session"]))
 
         elif entry["eventid"] == 'cowrie.log.closed':
             self.simpleQuery(
