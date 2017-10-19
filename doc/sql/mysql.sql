@@ -5,13 +5,15 @@ CREATE TABLE IF NOT EXISTS `auth` (
   `username` varchar(100) NOT NULL,
   `password` varchar(100) NOT NULL,
   `timestamp` datetime NOT NULL,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY  (`id`),
+  KEY `success`,
+  KEY `timestamp`
 ) ;
 
 CREATE TABLE IF NOT EXISTS `clients` (
   `id` int(4) NOT NULL auto_increment,
   `version` varchar(50) NOT NULL,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY  (`id`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `input` (
@@ -20,15 +22,17 @@ CREATE TABLE IF NOT EXISTS `input` (
   `timestamp` datetime NOT NULL,
   `realm` varchar(50) default NULL,
   `success` tinyint(1) default NULL,
-  `input` text NOT NULL,
-  PRIMARY KEY  (`id`),
-  KEY `session` (`session`,`timestamp`,`realm`)
+  `input` varchar(3000) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  PRIMARY KEY  (`id`),
+  KEY `session` (`session`,`timestamp`,`realm`),
+  KEY `timestamp`,
+  KEY `input`
 ) ;
 
 CREATE TABLE IF NOT EXISTS `sensors` (
   `id` int(11) NOT NULL auto_increment,
   `ip` varchar(255) NOT NULL,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY  (`id`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `sessions` (
@@ -39,7 +43,13 @@ CREATE TABLE IF NOT EXISTS `sessions` (
   `ip` varchar(15) NOT NULL default '',
   `termsize` varchar(7) default NULL,
   `client` int(4) default NULL,
-  PRIMARY KEY  (`id`),
+  `country_name` varchar(45) default '',
+  `country_iso_code` varchar(2) default '',
+  `city_name` varchar(128) default '',
+  `lattitude` float,
+  `longitude` float,
+  `geohash` varchar(30),
+  PRIMARY KEY  (`id`),
   KEY `starttime` (`starttime`,`sensor`)
 ) ;
 
@@ -48,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `ttylog` (
   `session` char(32) NOT NULL,
   `ttylog` varchar(100) NOT NULL,
   `size` int(11) NOT NULL,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY  (`id`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `downloads` (
@@ -58,8 +68,9 @@ CREATE TABLE IF NOT EXISTS `downloads` (
   `url` text NOT NULL,
   `outfile` text NOT NULL,
   `shasum` varchar(64) default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `session` (`session`,`timestamp`)
+  PRIMARY KEY  (`id`),
+  KEY `session` (`session`,`timestamp`),
+  KEY `timestamp`
 ) ;
 
 CREATE TABLE IF NOT EXISTS `keyfingerprints` (
@@ -67,5 +78,5 @@ CREATE TABLE IF NOT EXISTS `keyfingerprints` (
   `session` CHAR( 32 ) NOT NULL,
   `username` varchar(100) NOT NULL,
   `fingerprint` varchar(100) NOT NULL,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY  (`id`)
 ) ;
