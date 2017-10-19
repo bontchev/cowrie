@@ -415,6 +415,7 @@ logfile = log/cowrie.json
 #username = cowrie
 #password = secret
 #port = 3306
+#store_input = true
 #debug = false
 
 # Rethinkdb output module
