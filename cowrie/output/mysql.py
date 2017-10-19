@@ -7,6 +7,9 @@ from __future__ import division, absolute_import
 
 import MySQLdb
 
+import geoip2.database
+import Geohash
+
 from twisted.internet import defer
 from twisted.enterprise import adbapi
 from twisted.python import log
@@ -46,9 +49,11 @@ class Output(cowrie.core.output.Output):
     """
     debug = False
     db = None
+    reader = None
 
     def __init__(self, cfg):
         self.cfg = cfg
+        self.geoipdb = '{}/GeoLite2-City.mmdb'.format(cfg.get('honeypot', 'data_path'))
         cowrie.core.output.Output.__init__(self, cfg)
 
 
@@ -56,6 +61,10 @@ class Output(cowrie.core.output.Output):
         """
         docstring here
         """
+        try:
+            self.reader = geoip2.database.Reader(self.geoipdb)
+        except Exception as e:
+            log.msg("could not open GeoIP database file " + self.geoipdb + ".")
         if self.cfg.has_option('output_mysql', 'debug'):
             self.debug = self.cfg.getboolean('output_mysql', 'debug')
 
@@ -80,6 +89,8 @@ class Output(cowrie.core.output.Output):
         """
         docstring here
         """
+        if reader is not None:
+            self.reader.close()
         self.db.close()
 
 
@@ -107,6 +118,7 @@ class Output(cowrie.core.output.Output):
         """
 
         if entry["eventid"] == 'cowrie.session.connect':
+            self.simpleQuery('LOCK TABLES `sensors` WRITE')
             r = yield self.db.runQuery(
                 "SELECT `id` FROM `sensors` WHERE `ip` = %s", (self.sensor,))
             if r:
@@ -116,11 +128,23 @@ class Output(cowrie.core.output.Output):
                     'INSERT INTO `sensors` (`ip`) VALUES (%s)', (self.sensor,))
                 r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                 sensorid = int(r[0][0])
+            response = self.reader.city(entry["src_ip"])
+            city = response.city.name
+            if city is None:
+                city = ''
+            country = response.country.name
+            if country is None:
+                country = ''
             self.simpleQuery(
-                "INSERT INTO `sessions` (`id`, `starttime`, `sensor`, `ip`)"
-                +  " VALUES (%s, FROM_UNIXTIME(%s), %s, %s)",
-                (entry["session"], entry["time"], sensorid, entry["src_ip"]))
-
+                'INSERT INTO `sessions` (`id`, `starttime`, `sensor`, `ip`, ' +
+                '`country_name`, `country_iso_code`, `city_name`, `lattitude`, ' +
+                '`longitude`, `geohash`)' +
+                ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s, %s, %s, %s, %s, %s)',
+                (entry["session"], entry["time"], sensorid, entry["src_ip"]),
+                country.encode('utf8'), response.country.iso_code, city.encode('utf8'),
+                str(response.location.latitude), str(response.location.longitude),
+                Geohash.encode(response.location.latitude, response.location.longitude))
+            self.simpleQuery('UNLOCK TABLES')
         elif entry["eventid"] == 'cowrie.login.success':
             self.simpleQuery('INSERT INTO `auth` (`session`, `success`' + \
                 ', `username`, `password`, `timestamp`)' + \
@@ -169,6 +193,7 @@ class Output(cowrie.core.output.Output):
                 entry["realm"], entry["input"]))
 
         elif entry["eventid"] == 'cowrie.client.version':
+            self.simpleQuery('LOCK TABLES `clients` WRITE')
             r = yield self.db.runQuery(
                 'SELECT `id` FROM `clients` WHERE `version` = %s', \
                 (entry['version'],))
@@ -183,6 +208,7 @@ class Output(cowrie.core.output.Output):
             self.simpleQuery(
                 'UPDATE `sessions` SET `client` = %s WHERE `id` = %s',
                 (id, entry["session"]))
+            self.simpleQuery('UNLOCK TABLES')
 
         elif entry["eventid"] == 'cowrie.client.size':
             self.simpleQuery(
