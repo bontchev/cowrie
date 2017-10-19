@@ -10,3 +10,5 @@ attrs
 service_identity
 python-dateutil
 tftpy
+geoip2
+Geohash
