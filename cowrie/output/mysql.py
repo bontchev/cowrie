@@ -50,6 +50,7 @@ class Output(cowrie.core.output.Output):
     debug = False
     db = None
     reader = None
+    store_input = False
 
     def __init__(self, cfg):
         self.cfg = cfg
@@ -67,6 +68,8 @@ class Output(cowrie.core.output.Output):
             log.msg("could not open GeoIP database file " + self.geoipdb + ".")
         if self.cfg.has_option('output_mysql', 'debug'):
             self.debug = self.cfg.getboolean('output_mysql', 'debug')
+        if self.cfg.has_option('output_mysql', 'store_input'):
+            self.store_input = self.cfg.getboolean('output_mysql', 'store_input')
 
         if self.cfg.has_option('output_mysql', 'port'):
             port = int(self.cfg.get('output_mysql', 'port'))
@@ -160,16 +163,18 @@ class Output(cowrie.core.output.Output):
                 entry["time"]))
 
         elif entry["eventid"] == 'cowrie.command.success':
-            self.simpleQuery('INSERT INTO `input`' + \
-                ' (`session`, `timestamp`, `success`, `input`)' + \
-                ' VALUES (%s, FROM_UNIXTIME(%s), %s , %s)',
-                (entry["session"], entry["time"], 1, entry["input"]))
+            if self.store_input:
+                self.simpleQuery('INSERT INTO `input`' + \
+                    ' (`session`, `timestamp`, `success`, `input`)' + \
+                    ' VALUES (%s, FROM_UNIXTIME(%s), %s , %s)',
+                    (entry["session"], entry["time"], 1, entry["input"]))
 
         elif entry["eventid"] == 'cowrie.command.failed':
-            self.simpleQuery('INSERT INTO `input`' + \
-                ' (`session`, `timestamp`, `success`, `input`)' + \
-                ' VALUES (%s, FROM_UNIXTIME(%s), %s , %s)',
-                (entry["session"], entry["time"], 0, entry["input"]))
+            if self.store_input:
+                self.simpleQuery('INSERT INTO `input`' + \
+                    ' (`session`, `timestamp`, `success`, `input`)' + \
+                    ' VALUES (%s, FROM_UNIXTIME(%s), %s , %s)',
+                    (entry["session"], entry["time"], 0, entry["input"]))
 
         elif entry["eventid"] == 'cowrie.session.file_download':
             self.simpleQuery('INSERT INTO `downloads`' + \
@@ -186,11 +191,12 @@ class Output(cowrie.core.output.Output):
                 '', entry['outfile'], entry['shasum']))
 
         elif entry["eventid"] == 'cowrie.session.input':
-            self.simpleQuery('INSERT INTO `input`' + \
-                ' (`session`, `timestamp`, `realm`, `input`)' + \
-                ' VALUES (%s, FROM_UNIXTIME(%s), %s , %s)',
-                (entry["session"], entry["time"],
-                entry["realm"], entry["input"]))
+            if self.store_input:
+                self.simpleQuery('INSERT INTO `input`' + \
+                    ' (`session`, `timestamp`, `realm`, `input`)' + \
+                    ' VALUES (%s, FROM_UNIXTIME(%s), %s , %s)',
+                    (entry["session"], entry["time"],
+                    entry["realm"], entry["input"]))
 
         elif entry["eventid"] == 'cowrie.client.version':
             self.simpleQuery('LOCK TABLES `clients` WRITE')
