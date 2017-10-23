@@ -75,16 +75,25 @@ Activate the virtual environment and install packages
 ```
 $ source cowrie-env/bin/activate
 (cowrie-env) $ pip install -r requirements.txt
+(cowrie-env) $ deactivate
 ```
 
 ## Step 5: Install configuration file
 
-The configuration for Cowrie is stored in cowrie.cfg.dist and
-cowrie.cfg. Both files are read, where entries from cowrie.cfg take
-precedence. The .dist file can be overwritten on upgrades, cowrie.cfg
-will not be changed. To run with a standard configuration, there
-is no need to change anything. To enable telnet, for example, create
-cowrie.cfg and input only the following:
+The configuration for Cowrie is stored in `cowrie.cfg.dist` and
+`cowrie.cfg`. Both files are read, where entries from `cowrie.cfg` take
+precedence. The `.dist` file can be overwritten on upgrades, `cowrie.cfg`
+will not be changed.
+
+To run with a standard configuration, there is no need to change anything.
+To enable telnet, for example, create `cowrie.cfg` as a copy of the file
+`cowrie.cfg.dist`
+
+```
+cp cowrie.cfg.dist cowrie.cfg
+```
+
+and change the `[telnet]` section to contain:
 
 ```
 [telnet]
