@@ -131,7 +131,7 @@ class Output(cowrie.core.output.Output):
                     'INSERT INTO `sensors` (`ip`) VALUES (%s)', (self.sensor,))
                 r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                 sensorid = int(r[0][0])
-            response = self.reader.city(entry["src_ip"])
+            response = self.reader.city(entry["src_ip"])
             city = response.city.name
             if city is None:
                 city = ''
