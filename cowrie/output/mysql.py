@@ -50,7 +50,7 @@ class Output(cowrie.core.output.Output):
     debug = False
     db = None
     reader = None
-    store_input = False
+    store_input = True
 
     def __init__(self, cfg):
         self.cfg = cfg
