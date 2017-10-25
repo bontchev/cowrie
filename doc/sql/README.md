@@ -8,6 +8,7 @@
 ## Installation
 
 ```
+sudo apt-get install python-mysqldb libmysqlclient-dev
 su - cowrie
 source cowrie/cowrie-env/bin/activate
 pip install MySQL-python
@@ -18,15 +19,16 @@ pip install MySQL-python
 First create the database and grant access to the Cowrie user account:
 ```
 mysql -u root -p
-CREATE DATABASE cowrie;
-GRANT ALL ON cowrie.* TO 'cowrie'@'localhost' IDENTIFIED BY 'PASSWORD HERE';
+CREATE DATABASE IF NOT EXISTS cowrie;
+CREATE USER IF NOT EXISTS 'cowrie'@'localhost' IDENTIFIED BY 'PASSWORD HERE' PASSWORD EXPIRE NEVER;
+GRANT ALTER, ALTER ROUTINE, CREATE, CREATE ROUTINE, CREATE TEMPORARY TABLES, CREATE VIEW, DELETE, DROP, EXECUTE,FILE, INDEX, INSERT, LOCK TABLES, RELOAD, SELECT, SHOW DATABASES, SHOW VIEW, TRIGGER, UPDATE ON cowrie TO 'cowrie'@'localhost';
 FLUSH PRIVILEGES;
 exit
 ```
 
 Next load the database schema:
 ```
-cd /opt/cowrie/
+cd /home/cowrie/cowrie/
 mysql -u cowrie -p
 USE cowrie;
 source ./doc/sql/mysql.sql;
@@ -44,6 +46,7 @@ database = cowrie
 username = cowrie
 password = PASSWORD HERE
 port = 3306
+store_input = true
 debug = false
 ```
 

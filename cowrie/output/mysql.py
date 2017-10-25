@@ -92,7 +92,7 @@ class Output(cowrie.core.output.Output):
         """
         docstring here
         """
-        if reader is not None:
+        if self.reader is not None:
             self.reader.close()
         self.db.close()
 
@@ -121,7 +121,7 @@ class Output(cowrie.core.output.Output):
         """
 
         if entry["eventid"] == 'cowrie.session.connect':
-            self.simpleQuery('LOCK TABLES `sensors` WRITE')
+            self.simpleQuery('LOCK TABLES `sensors` WRITE', '')
             r = yield self.db.runQuery(
                 "SELECT `id` FROM `sensors` WHERE `ip` = %s", (self.sensor,))
             if r:
@@ -131,23 +131,32 @@ class Output(cowrie.core.output.Output):
                     'INSERT INTO `sensors` (`ip`) VALUES (%s)', (self.sensor,))
                 r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                 sensorid = int(r[0][0])
-            response = self.reader.city(entry["src_ip"])
-            city = response.city.name
-            if city is None:
+            self.simpleQuery('UNLOCK TABLES', '')
+            try:
+                response = self.reader.city(entry["src_ip"])
+                city = response.city.name
+                if city is None:
+                    city = ''
+                country = response.country.name
+                if country is None:
+                    country = ''
+                country_code = response.country.iso_code
+                lattitude = response.location.lattitude
+                longitude = response.location.longitude
+            except:
                 city = ''
-            country = response.country.name
-            if country is None:
                 country = ''
+                country_code = ''
+                lattitude = 0
+                longitude = 0
             self.simpleQuery(
                 'INSERT INTO `sessions` (`id`, `starttime`, `sensor`, `ip`, ' +
-                '`country_name`, `country_iso_code`, `city_name`, `lattitude`, ' +
+                '`country_name`, `country_code`, `city_name`, `lattitude`, ' +
                 '`longitude`, `geohash`)' +
                 ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s, %s, %s, %s, %s, %s)',
-                (entry["session"], entry["time"], sensorid, entry["src_ip"]),
-                country.encode('utf8'), response.country.iso_code, city.encode('utf8'),
-                str(response.location.latitude), str(response.location.longitude),
-                Geohash.encode(response.location.latitude, response.location.longitude))
-            self.simpleQuery('UNLOCK TABLES')
+                (entry["session"], entry["time"], sensorid, entry["src_ip"],
+                country.encode('utf8'), country_code, city.encode('utf8'),
+                str(lattitude), str(longitude), Geohash.encode(lattitude, longitude)))
         elif entry["eventid"] == 'cowrie.login.success':
             self.simpleQuery('INSERT INTO `auth` (`session`, `success`' + \
                 ', `username`, `password`, `timestamp`)' + \
@@ -199,7 +208,7 @@ class Output(cowrie.core.output.Output):
                     entry["realm"], entry["input"]))
 
         elif entry["eventid"] == 'cowrie.client.version':
-            self.simpleQuery('LOCK TABLES `clients` WRITE')
+            self.simpleQuery('LOCK TABLES `clients` WRITE', '')
             r = yield self.db.runQuery(
                 'SELECT `id` FROM `clients` WHERE `version` = %s', \
                 (entry['version'],))
@@ -211,10 +220,10 @@ class Output(cowrie.core.output.Output):
                     (entry['version'],))
                 r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                 id = int(r[0][0])
+            self.simpleQuery('UNLOCK TABLES', '')
             self.simpleQuery(
                 'UPDATE `sessions` SET `client` = %s WHERE `id` = %s',
                 (id, entry["session"]))
-            self.simpleQuery('UNLOCK TABLES')
 
         elif entry["eventid"] == 'cowrie.client.size':
             self.simpleQuery(
