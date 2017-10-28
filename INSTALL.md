@@ -100,25 +100,6 @@ and change the `[telnet]` section to contain:
 enabled = true
 ```
 
-Optional: Download the geolocation database from Maxmind (currently used
-only when logging to a MySQL database):
-
-```
-$ cd data
-$ wget http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz
-$ gzip -df GeoLite2-City.mmdb.gz
-$ cd ..
-```
-
-To have the database updated automatically (it is updated every second Tuesday
-of each month, so download it every second Wednesday), create a crontab job
-(`crontab -e`) and enter the following:
-
-```
-# Update the geoIP database at midnight on the 2nd Wednesday of each month:
-0 0 * * 3 [ `/bin/date +\%d` -le 7 ] && cd /home/cowrie/cowrie/data && /usr/bin/wget http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz && /bin/gzip -df GeoLite2-City.mmdb.gz
-```
-
 ## Step 6: Generate a DSA key
 
 This step should not be necessary, however some versions of twisted

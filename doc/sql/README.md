@@ -12,6 +12,19 @@ sudo apt-get install python-mysqldb libmysqlclient-dev
 su - cowrie
 source cowrie/cowrie-env/bin/activate
 pip install MySQL-python
+cd data
+wget http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz
+gzip -df GeoLite2-City.mmdb.gz
+cd ..
+```
+
+To have the database updated automatically (it is updated every second Tuesday
+of each month, so download it every second Wednesday), create a crontab job
+(`crontab -e`) and enter the following:
+
+```
+# Update the geoIP database at midnight on the 2nd Wednesday of each month:
+0 0 * * 3 [ `/bin/date +\%d` -le 7 ] && cd /home/cowrie/cowrie/data && /usr/bin/wget http://geolite.maxmind.com/       download/geoip/database/GeoLite2-City.mmdb.gz && /bin/gzip -df GeoLite2-City.mmdb.gz
 ```
 
 ## mySQL configuration
