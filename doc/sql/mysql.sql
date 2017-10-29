@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS `auth` (
   `username` varchar(100) NOT NULL,
   `password` varchar(100) NOT NULL,
   `timestamp` datetime NOT NULL,
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `success`,
   KEY `timestamp`
 ) ;
@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS `auth` (
 CREATE TABLE IF NOT EXISTS `clients` (
   `id` int(4) NOT NULL auto_increment,
   `version` varchar(50) NOT NULL,
-  PRIMARY KEY  (`id`)
+  UNIQUE (`version`),
+  PRIMARY KEY (`id`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `input` (
@@ -23,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `input` (
   `realm` varchar(50) default NULL,
   `success` tinyint(1) default NULL,
   `input` varchar(3000) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `session` (`session`,`timestamp`,`realm`),
   KEY `timestamp`,
   KEY `input`
@@ -32,7 +33,8 @@ CREATE TABLE IF NOT EXISTS `input` (
 CREATE TABLE IF NOT EXISTS `sensors` (
   `id` int(11) NOT NULL auto_increment,
   `ip` varchar(255) NOT NULL,
-  PRIMARY KEY  (`id`)
+  UNIQUE (`ip`),
+  PRIMARY KEY (`id`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `sessions` (
@@ -58,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `ttylog` (
   `session` char(32) NOT NULL,
   `ttylog` varchar(100) NOT NULL,
   `size` int(11) NOT NULL,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY (`id`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `downloads` (
@@ -68,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `downloads` (
   `url` text NOT NULL,
   `outfile` text NOT NULL,
   `shasum` varchar(64) default NULL,
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `session` (`session`,`timestamp`),
   KEY `timestamp`
 ) ;
@@ -78,5 +80,6 @@ CREATE TABLE IF NOT EXISTS `keyfingerprints` (
   `session` CHAR( 32 ) NOT NULL,
   `username` varchar(100) NOT NULL,
   `fingerprint` varchar(100) NOT NULL,
-  PRIMARY KEY  (`id`)
+  UNIQUE (`fingerprint`),
+  PRIMARY KEY (`id`)
 ) ;

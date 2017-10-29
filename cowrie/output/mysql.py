@@ -121,17 +121,17 @@ class Output(cowrie.core.output.Output):
         """
 
         if entry["eventid"] == 'cowrie.session.connect':
-            self.simpleQuery('LOCK TABLES `sensors` WRITE', '')
+            #self.simpleQuery('LOCK TABLES `sensors` WRITE', '')
             r = yield self.db.runQuery(
                 "SELECT `id` FROM `sensors` WHERE `ip` = %s", (self.sensor,))
             if r:
                 sensorid = r[0][0]
             else:
                 yield self.db.runQuery(
-                    'INSERT INTO `sensors` (`ip`) VALUES (%s)', (self.sensor,))
+                    'INSERT IGNORE INTO `sensors` (`ip`) VALUES (%s)', (self.sensor,))
                 r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                 sensorid = int(r[0][0])
-            self.simpleQuery('UNLOCK TABLES', '')
+            #self.simpleQuery('UNLOCK TABLES', '')
             try:
                 response = self.reader.city(entry["src_ip"])
                 city = response.city.name
@@ -208,7 +208,7 @@ class Output(cowrie.core.output.Output):
                     entry["realm"], entry["input"]))
 
         elif entry["eventid"] == 'cowrie.client.version':
-            self.simpleQuery('LOCK TABLES `clients` WRITE', '')
+            #self.simpleQuery('LOCK TABLES `clients` WRITE', '')
             r = yield self.db.runQuery(
                 'SELECT `id` FROM `clients` WHERE `version` = %s', \
                 (entry['version'],))
@@ -216,11 +216,11 @@ class Output(cowrie.core.output.Output):
                 id = int(r[0][0])
             else:
                 yield self.db.runQuery(
-                    'INSERT INTO `clients` (`version`) VALUES (%s)', \
+                    'INSERT IGNORE INTO `clients` (`version`) VALUES (%s)', \
                     (entry['version'],))
                 r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                 id = int(r[0][0])
-            self.simpleQuery('UNLOCK TABLES', '')
+            #self.simpleQuery('UNLOCK TABLES', '')
             self.simpleQuery(
                 'UPDATE `sessions` SET `client` = %s WHERE `id` = %s',
                 (id, entry["session"]))
@@ -243,6 +243,6 @@ class Output(cowrie.core.output.Output):
 
         elif entry["eventid"] == 'cowrie.client.fingerprint':
             self.simpleQuery(
-                'INSERT INTO `keyfingerprints` (`session`, `username`, `fingerprint`) VALUES (%s, %s, %s)',
+                'INSERT IGNORE INTO `keyfingerprints` (`session`, `username`, `fingerprint`) VALUES (%s, %s, %s)',
                 (entry["session"], entry["username"], entry["fingerprint"]))
 
