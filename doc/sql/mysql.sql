@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS `auth` (
   `password` varchar(100) NOT NULL,
   `timestamp` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `success`,
-  KEY `timestamp`
+  KEY (`success`),
+  KEY (`timestamp`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `clients` (
@@ -23,18 +23,25 @@ CREATE TABLE IF NOT EXISTS `input` (
   `timestamp` datetime NOT NULL,
   `realm` varchar(50) default NULL,
   `success` tinyint(1) default NULL,
-  `input` varchar(3000) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `input` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `session` (`session`,`timestamp`,`realm`),
-  KEY `timestamp`,
-  KEY `input`
+  KEY (`timestamp`),
+  KEY (`input`)
+) ;
+
+CREATE TABLE IF NOT EXISTS `commands` (
+  `id` int(11) NOT NULL auto_increment,
+  `input` varchar(3000) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY (`input`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `sensors` (
   `id` int(11) NOT NULL auto_increment,
   `ip` varchar(255) NOT NULL,
   UNIQUE (`ip`),
-  PRIMARY KEY (`id`)
+  PRIMARY KEY  (`id`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `sessions` (
@@ -51,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `sessions` (
   `lattitude` float,
   `longitude` float,
   `geohash` varchar(30),
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `starttime` (`starttime`,`sensor`)
 ) ;
 
@@ -72,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `downloads` (
   `shasum` varchar(64) default NULL,
   PRIMARY KEY (`id`),
   KEY `session` (`session`,`timestamp`),
-  KEY `timestamp`
+  KEY (`timestamp`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `keyfingerprints` (

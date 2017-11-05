@@ -173,17 +173,35 @@ class Output(cowrie.core.output.Output):
 
         elif entry["eventid"] == 'cowrie.command.success':
             if self.store_input:
+                r = yield self.db.runQuery(
+                    'SELECT `id` FROM `commands` WHERE `input` = %s', (entry["input"],))
+                if r:
+                    commandid = r[0][0]
+                else:
+                    yield self.db.runQuery(
+                        'INSERT IGNORE INTO `commands` (`input`) VALUES (%s)', (entry["input"],))
+                    r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
+                    commandid = int(r[0][0])
                 self.simpleQuery('INSERT INTO `input`' + \
                     ' (`session`, `timestamp`, `success`, `input`)' + \
                     ' VALUES (%s, FROM_UNIXTIME(%s), %s , %s)',
-                    (entry["session"], entry["time"], 1, entry["input"]))
+                    (entry["session"], entry["time"], 1, commandid))
 
         elif entry["eventid"] == 'cowrie.command.failed':
             if self.store_input:
+                r = yield self.db.runQuery(
+                    'SELECT `id` FROM `commands` WHERE `input` = %s', (entry["input"],))
+                if r:
+                    commandid = r[0][0]
+                else:
+                    yield self.db.runQuery(
+                        'INSERT IGNORE INTO `commands` (`input`) VALUES (%s)', (entry["input"],))
+                    r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
+                    commandid = int(r[0][0])
                 self.simpleQuery('INSERT INTO `input`' + \
                     ' (`session`, `timestamp`, `success`, `input`)' + \
                     ' VALUES (%s, FROM_UNIXTIME(%s), %s , %s)',
-                    (entry["session"], entry["time"], 0, entry["input"]))
+                    (entry["session"], entry["time"], 0, commandid))
 
         elif entry["eventid"] == 'cowrie.session.file_download':
             self.simpleQuery('INSERT INTO `downloads`' + \
@@ -201,11 +219,20 @@ class Output(cowrie.core.output.Output):
 
         elif entry["eventid"] == 'cowrie.session.input':
             if self.store_input:
+                r = yield self.db.runQuery(
+                    'SELECT `id` FROM `commands` WHERE `input` = %s', (entry["input"],))
+                if r:
+                    commandid = r[0][0]
+                else:
+                    yield self.db.runQuery(
+                        'INSERT IGNORE INTO `commands` (`input`) VALUES (%s)', (entry["input"],))
+                    r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
+                    commandid = int(r[0][0])
                 self.simpleQuery('INSERT INTO `input`' + \
                     ' (`session`, `timestamp`, `realm`, `input`)' + \
                     ' VALUES (%s, FROM_UNIXTIME(%s), %s , %s)',
                     (entry["session"], entry["time"],
-                    entry["realm"], entry["input"]))
+                    entry["realm"], commandid))
 
         elif entry["eventid"] == 'cowrie.client.version':
             #self.simpleQuery('LOCK TABLES `clients` WRITE', '')
