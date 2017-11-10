@@ -33,8 +33,9 @@ CREATE TABLE IF NOT EXISTS `input` (
 CREATE TABLE IF NOT EXISTS `commands` (
   `id` int(11) NOT NULL auto_increment,
   `input` varchar(3000) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `inputhash` varchar(66),
   PRIMARY KEY (`id`),
-  KEY (`input`)
+  UNIQUE (`inputhash`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `sensors` (
