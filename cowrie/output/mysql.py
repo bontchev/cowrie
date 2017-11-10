@@ -9,6 +9,7 @@ import MySQLdb
 
 import geoip2.database
 import Geohash
+import hashlib
 
 from twisted.internet import defer
 from twisted.enterprise import adbapi
@@ -173,13 +174,14 @@ class Output(cowrie.core.output.Output):
 
         elif entry["eventid"] == 'cowrie.command.success':
             if self.store_input:
+                shasum = hashlib.sha256(entry["input"]).hexdigest()
                 r = yield self.db.runQuery(
-                    'SELECT `id` FROM `commands` WHERE `input` = %s', (entry["input"],))
+                    'SELECT `id` FROM `commands` WHERE `inputhash` = %s', (shasum,))
                 if r:
                     commandid = r[0][0]
                 else:
                     yield self.db.runQuery(
-                        'INSERT IGNORE INTO `commands` (`input`) VALUES (%s)', (entry["input"],))
+                        'INSERT IGNORE INTO `commands` (`input`, `inputhash`) VALUES (%s, %s)', (entry["input"], shasum,))
                     r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                     commandid = int(r[0][0])
                 self.simpleQuery('INSERT INTO `input`' + \
@@ -189,13 +191,14 @@ class Output(cowrie.core.output.Output):
 
         elif entry["eventid"] == 'cowrie.command.failed':
             if self.store_input:
+                shasum = hashlib.sha256(entry["input"]).hexdigest()
                 r = yield self.db.runQuery(
-                    'SELECT `id` FROM `commands` WHERE `input` = %s', (entry["input"],))
+                    'SELECT `id` FROM `commands` WHERE `inputhash` = %s', (shasum,))
                 if r:
                     commandid = r[0][0]
                 else:
                     yield self.db.runQuery(
-                        'INSERT IGNORE INTO `commands` (`input`) VALUES (%s)', (entry["input"],))
+                        'INSERT IGNORE INTO `commands` (`input`, `inputhash`) VALUES (%s, %s)', (entry["input"], shasum,))
                     r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                     commandid = int(r[0][0])
                 self.simpleQuery('INSERT INTO `input`' + \
@@ -219,13 +222,14 @@ class Output(cowrie.core.output.Output):
 
         elif entry["eventid"] == 'cowrie.session.input':
             if self.store_input:
+                shasum = hashlib.sha256(entry["input"]).hexdigest()
                 r = yield self.db.runQuery(
-                    'SELECT `id` FROM `commands` WHERE `input` = %s', (entry["input"],))
+                    'SELECT `id` FROM `commands` WHERE `inputhash` = %s', (shasum,))
                 if r:
                     commandid = r[0][0]
                 else:
                     yield self.db.runQuery(
-                        'INSERT IGNORE INTO `commands` (`input`) VALUES (%s)', (entry["input"],))
+                        'INSERT IGNORE INTO `commands` (`input`, `inputhash`) VALUES (%s, %s)', (entry["input"], shasum,))
                     r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                     commandid = int(r[0][0])
                 self.simpleQuery('INSERT INTO `input`' + \
