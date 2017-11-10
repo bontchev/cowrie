@@ -1,0 +1,11 @@
+#Change the below to yes if you are using authbind to listen to port 22
+AUTHBIND_ENABLED=no
+
+#Change the below to yes to activate the "cowrie-env" virtual environment
+VIRTUALENV_ENABLED=yes
+
+#Change the below to -n to disable daemonizing (for instance when using supervisor)
+DAEMONIZE=
+
+#CHange the below to 0022 to make the log files readable by everyone
+UMASK=0077
