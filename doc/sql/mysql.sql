@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS `sessions` (
   `ip` varchar(15) NOT NULL default '',
   `termsize` varchar(7) default NULL,
   `client` int(4) default NULL,
+  `port` int(5) NOT NULL,
   `country_name` varchar(45) default '',
   `country_iso_code` varchar(2) default '',
   `city_name` varchar(128) default '',
