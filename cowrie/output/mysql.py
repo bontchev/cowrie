@@ -152,10 +152,10 @@ class Output(cowrie.core.output.Output):
                 longitude = 0
             self.simpleQuery(
                 'INSERT INTO `sessions` (`id`, `starttime`, `sensor`, `ip`, ' +
-                '`country_name`, `country_code`, `city_name`, `lattitude`, ' +
+                '`port`, `country_name`, `country_code`, `city_name`, `lattitude`, ' +
                 '`longitude`, `geohash`)' +
-                ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s, %s, %s, %s, %s, %s)',
-                (entry["session"], entry["time"], sensorid, entry["src_ip"],
+                ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                (entry["session"], entry["time"], sensorid, entry["src_ip"], entry["dst_port"],
                 country.encode('utf8'), country_code, city.encode('utf8'),
                 str(lattitude), str(longitude), Geohash.encode(lattitude, longitude)))
         elif entry["eventid"] == 'cowrie.login.success':
