@@ -1,7 +1,7 @@
 #!/bin/bash
 
 script_dir=$(dirname "$(readlink -f "$0")")
-config_file_name=${script_dir}/cowrie.cfg
+config_file_name=${script_dir}/cowrie-launch.cfg
 
 config_read_file() {
     (grep -E "^${2}=" -m 1 "${1}" 2>/dev/null || echo "VAR=__UNDEFINED__") | head -n 1 | cut -d '=' -f 2-;
