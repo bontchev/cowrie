@@ -9,6 +9,7 @@ pyes
 
 # mysql
 MySQL-python
+hashlib
 
 # mongodb
 pymongo
