@@ -100,6 +100,32 @@ and change the `[telnet]` section to contain:
 enabled = true
 ```
 
+There is another configuration file containing various launch options in
+the `bin` directory. The distribution (default) values are stored in
+`bin/cowrie-launch.cfg.dist`. If you want to change some of them, put the
+changed values in a file `bin/cowrie-launch.cfg`. For instance, to use
+`authbind` and change the `umask` so that the logs created by Cowrie are
+world-readable,
+
+```
+cd bin
+cp cowrie-launch.cfg.dist cowrie-launch.cfg
+```
+
+and change
+
+```
+AUTHBIND_ENABLED=no
+UMASK=0077
+```
+
+to
+
+```
+AUTHBIND_ENABLED=yes
+UMASK=0022
+```
+
 ## Step 6: Generate a DSA key
 
 This step should not be necessary, however some versions of twisted
