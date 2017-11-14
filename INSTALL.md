@@ -19,7 +19,7 @@ The actual Python packages are installed later.
 
 On Debian based systems (last verified on Debian 9, 2017-07-25):
 ```
-$ sudo apt-get install git python-virtualenv libssl-dev libffi-dev build-essential libpython-dev python2.7-minimal authbind
+$ sudo apt-get install git python-virtualenv libssl-dev libffi-dev build-essential libpython-dev python2.7-minimal python-pip
 ```
 
 ## Step 2: Create a user account
@@ -161,7 +161,7 @@ it will be automatically activated. Otherwise you will need to activate it
 manually
 
 ```
-$ bin/cowrie start
+$ ./bin/cowrie start
 Activating virtualenv "cowrie-env"
 Starting cowrie with extra arguments [] ...
 ```
@@ -170,6 +170,7 @@ Starting cowrie with extra arguments [] ...
 
 Cowrie runs by default on port 2222. This can be modified in the configuration file.
 The following firewall rule will forward incoming traffic on port 22 to port 2222.
+Do it from a user who can `sudo` - i.e., not from the user `cowrie`.
 
 ```
 $ sudo iptables -t nat -A PREROUTING -p tcp --dport 22 -j REDIRECT --to-port 2222
@@ -195,7 +196,7 @@ $ sudo chown cowrie:cowrie /etc/authbind/byport/23
 $ sudo chmod 770 /etc/authbind/byport/23
 ```
 
-* Edit bin/cowrie and modify the AUTHBIND_ENABLED setting
+* Edit bin/cowrie-launch.cfg and modify the AUTHBIND_ENABLED setting
 * Change listen_port to 22 in cowrie.cfg
 
 ## Running using Supervisord
@@ -223,7 +224,3 @@ Update the bin/cowrie script, change:
 possibilities. If there's a python stack trace, it probably means
 there's a missing or broken dependency. If there's no stack trace,
 double check that your PYTHONPATH is set to the source code directory.
-* Default file permissions
-
-To make Cowrie logfiles public readable, change the ```--umask 0077``` option in start.sh into ```--umask 0022```
-
