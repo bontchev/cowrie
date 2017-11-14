@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `sessions` (
   `country_name` varchar(45) default '',
   `country_iso_code` varchar(2) default '',
   `city_name` varchar(128) default '',
-  `lattitude` float,
+  `latitude` float,
   `longitude` float,
   `geohash` varchar(30),
   PRIMARY KEY (`id`),
