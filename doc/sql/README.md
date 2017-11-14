@@ -9,10 +9,10 @@
 
 ```
 $ sudo apt-get install python-mysqldb libmysqlclient-dev
-$ easy_install hashlib
-$ su - cowrie
+$ sudo su - cowrie
 $ cd cowrie
 $ source ./cowrie-env/bin/activate
+$ easy_install hashlib
 $ pip install MySQL-python
 $ deactivate
 $ cd data
