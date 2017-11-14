@@ -8,14 +8,16 @@
 ## Installation
 
 ```
-sudo apt-get install python-mysqldb libmysqlclient-dev
-su - cowrie
-source cowrie/cowrie-env/bin/activate
-pip install MySQL-python
-cd data
-wget http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz
-gzip -df GeoLite2-City.mmdb.gz
-cd ..
+$ sudo apt-get install python-mysqldb libmysqlclient-dev
+$ su - cowrie
+$ cd cowrie
+$ source ./cowrie-env/bin/activate
+$ pip install MySQL-python
+$ deactivate
+$ cd data
+wget http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz$ 
+$ gzip -df GeoLite2-City.mmdb.gz
+$ cd ..
 ```
 
 To have the database updated automatically (it is updated every second Tuesday
@@ -31,21 +33,20 @@ of each month, so download it every second Wednesday), create a crontab job
 
 First create the database and grant access to the Cowrie user account:
 ```
-mysql -u root -p
-CREATE DATABASE IF NOT EXISTS cowrie;
-CREATE USER IF NOT EXISTS 'cowrie'@'localhost' IDENTIFIED BY 'PASSWORD HERE' PASSWORD EXPIRE NEVER;
-GRANT ALTER, ALTER ROUTINE, CREATE, CREATE ROUTINE, CREATE TEMPORARY TABLES, CREATE VIEW, DELETE, DROP, EXECUTE,FILE, INDEX, INSERT, LOCK TABLES, RELOAD, SELECT, SHOW DATABASES, SHOW VIEW, TRIGGER, UPDATE ON cowrie TO 'cowrie'@'localhost';
-FLUSH PRIVILEGES;
-exit
+$ mysql -p -u root
+MySQL> CREATE DATABASE IF NOT EXISTS cowrie;
+MySQL> CREATE USER IF NOT EXISTS 'cowrie'@'localhost' IDENTIFIED BY 'PASSWORD HERE' PASSWORD EXPIRE NEVER;
+MySQL> GRANT ALTER, ALTER ROUTINE, CREATE, CREATE ROUTINE, CREATE TEMPORARY TABLES, CREATE VIEW, DELETE, DROP, EXECUTE,FILE, INDEX, INSERT, LOCK TABLES, RELOAD, SELECT, SHOW DATABASES, SHOW VIEW, TRIGGER, UPDATE ON cowrie TO 'cowrie'@'localhost';
+MySQL> FLUSH PRIVILEGES;
+MySQL> exit
 ```
 
 Next load the database schema:
 ```
-cd /home/cowrie/cowrie/
-mysql -u cowrie -p
-USE cowrie;
-source ./doc/sql/mysql.sql;
-exit
+$ cd /home/cowrie/cowrie/
+$ mysql -p -u cowrie cowrie
+MySQL> source ./doc/sql/mysql.sql;
+MySQL> exit
 ```
 
 ## cowrie configuration
