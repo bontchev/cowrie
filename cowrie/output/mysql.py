@@ -10,6 +10,7 @@ import MySQLdb
 import geoip2.database
 import Geohash
 import hashlib
+import warnings
 
 from twisted.internet import defer
 from twisted.enterprise import adbapi
@@ -128,9 +129,11 @@ class Output(cowrie.core.output.Output):
             if r:
                 sensorid = r[0][0]
             else:
+                warnings.filterwarnings('ignore')
                 yield self.db.runQuery(
                     'INSERT IGNORE INTO `sensors` (`ip`) VALUES (%s)', (self.sensor,))
                 r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
+                warnings.resetwarnings()
                 sensorid = int(r[0][0])
             #self.simpleQuery('UNLOCK TABLES', '')
             try:
@@ -156,7 +159,7 @@ class Output(cowrie.core.output.Output):
                 '`longitude`, `geohash`)' +
                 ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s, %s, %s, %s, %s, %s, %s)',
                 (entry["session"], entry["time"], sensorid, entry["src_ip"], entry["dst_port"],
-                country.encode('utf8'), country_code, city.encode('utf8'),
+                country.encode('utf8'), country_iso_code, city.encode('utf8'),
                 str(lattitude), str(longitude), Geohash.encode(lattitude, longitude)))
         elif entry["eventid"] == 'cowrie.login.success':
             self.simpleQuery('INSERT INTO `auth` (`session`, `success`' + \
@@ -180,8 +183,10 @@ class Output(cowrie.core.output.Output):
                 if r:
                     commandid = r[0][0]
                 else:
+                    warnings.filterwarnings('ignore')
                     yield self.db.runQuery(
                         'INSERT IGNORE INTO `commands` (`input`, `inputhash`) VALUES (%s, %s)', (entry["input"], shasum,))
+                    warnings.resetwarnings()
                     r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                     commandid = int(r[0][0])
                 self.simpleQuery('INSERT INTO `input`' + \
@@ -197,8 +202,10 @@ class Output(cowrie.core.output.Output):
                 if r:
                     commandid = r[0][0]
                 else:
+                    warnings.filterwarnings('ignore')
                     yield self.db.runQuery(
                         'INSERT IGNORE INTO `commands` (`input`, `inputhash`) VALUES (%s, %s)', (entry["input"], shasum,))
+                    warnings.resetwarnings()
                     r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                     commandid = int(r[0][0])
                 self.simpleQuery('INSERT INTO `input`' + \
@@ -228,8 +235,10 @@ class Output(cowrie.core.output.Output):
                 if r:
                     commandid = r[0][0]
                 else:
+                    warnings.filterwarnings('ignore')
                     yield self.db.runQuery(
                         'INSERT IGNORE INTO `commands` (`input`, `inputhash`) VALUES (%s, %s)', (entry["input"], shasum,))
+                    warnings.resetwarnings()
                     r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                     commandid = int(r[0][0])
                 self.simpleQuery('INSERT INTO `input`' + \
@@ -246,9 +255,11 @@ class Output(cowrie.core.output.Output):
             if r:
                 id = int(r[0][0])
             else:
+                warnings.filterwarnings('ignore')
                 yield self.db.runQuery(
                     'INSERT IGNORE INTO `clients` (`version`) VALUES (%s)', \
                     (entry['version'],))
+                warnings.resetwarnings()
                 r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                 id = int(r[0][0])
             #self.simpleQuery('UNLOCK TABLES', '')
@@ -273,7 +284,9 @@ class Output(cowrie.core.output.Output):
                 (entry["session"], entry["ttylog"], entry["size"]))
 
         elif entry["eventid"] == 'cowrie.client.fingerprint':
+            warnings.filterwarnings('ignore')
             self.simpleQuery(
                 'INSERT IGNORE INTO `keyfingerprints` (`session`, `username`, `fingerprint`) VALUES (%s, %s, %s)',
                 (entry["session"], entry["username"], entry["fingerprint"]))
+            warnings.resetwarnings()
 
