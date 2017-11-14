@@ -145,22 +145,22 @@ class Output(cowrie.core.output.Output):
                 if country is None:
                     country = ''
                 country_code = response.country.iso_code
-                lattitude = response.location.lattitude
+                latitude = response.location.latitude
                 longitude = response.location.longitude
             except:
                 city = ''
                 country = ''
                 country_code = ''
-                lattitude = 0
+                latitude = 0
                 longitude = 0
             self.simpleQuery(
                 'INSERT INTO `sessions` (`id`, `starttime`, `sensor`, `ip`, ' +
-                '`port`, `country_name`, `country_iso_code`, `city_name`, `lattitude`, ' +
+                '`port`, `country_name`, `country_iso_code`, `city_name`, `latitude`, ' +
                 '`longitude`, `geohash`)' +
                 ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s, %s, %s, %s, %s, %s, %s)',
                 (entry["session"], entry["time"], sensorid, entry["src_ip"], entry["dst_port"],
                 country.encode('utf8'), country_code, city.encode('utf8'),
-                str(lattitude), str(longitude), Geohash.encode(lattitude, longitude)))
+                str(latitude), str(longitude), Geohash.encode(latitude, longitude)))
         elif entry["eventid"] == 'cowrie.login.success':
             self.simpleQuery('INSERT INTO `auth` (`session`, `success`' + \
                 ', `username`, `password`, `timestamp`)' + \
