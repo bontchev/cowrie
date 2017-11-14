@@ -46,7 +46,7 @@ $ sudo su - cowrie
 ## Step 3: Checkout the code
 
 ```
-$ git clone http://github.com/micheloosterhof/cowrie
+$ git clone http://github.com/bontchev/cowrie
 Cloning into 'cowrie'...
 remote: Counting objects: 2965, done.
 remote: Compressing objects: 100% (1025/1025), done.
@@ -90,7 +90,7 @@ To enable telnet, for example, create `cowrie.cfg` as a copy of the file
 `cowrie.cfg.dist`
 
 ```
-cp cowrie.cfg.dist cowrie.cfg
+$ cp cowrie.cfg.dist cowrie.cfg
 ```
 
 and change the `[telnet]` section to contain:
@@ -108,8 +108,8 @@ changed values in a file `bin/cowrie-launch.cfg`. For instance, to use
 world-readable,
 
 ```
-cd bin
-cp cowrie-launch.cfg.dist cowrie-launch.cfg
+$ cd bin
+$ cp cowrie-launch.cfg.dist cowrie-launch.cfg
 ```
 
 and change
