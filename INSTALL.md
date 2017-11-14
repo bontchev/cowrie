@@ -126,6 +126,12 @@ AUTHBIND_ENABLED=yes
 UMASK=0022
 ```
 
+Then return to the `cowrie` directory
+
+```
+$ cd ..
+```
+
 ## Step 6: Generate a DSA key
 
 This step should not be necessary, however some versions of twisted
