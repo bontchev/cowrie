@@ -10,7 +10,6 @@ import MySQLdb
 import geoip2.database
 import Geohash
 import hashlib
-import warnings
 
 from twisted.internet import defer
 from twisted.enterprise import adbapi
@@ -123,19 +122,16 @@ class Output(cowrie.core.output.Output):
         """
 
         if entry["eventid"] == 'cowrie.session.connect':
-            #self.simpleQuery('LOCK TABLES `sensors` WRITE', '')
             r = yield self.db.runQuery(
                 "SELECT `id` FROM `sensors` WHERE `ip` = %s", (self.sensor,))
             if r:
                 sensorid = r[0][0]
             else:
-                warnings.filterwarnings('ignore')
                 yield self.db.runQuery(
-                    'INSERT IGNORE INTO `sensors` (`ip`) VALUES (%s)', (self.sensor,))
+                    'INSERT INTO `sensors` (`ip`) VALUES (%s) ' +
+                    'ON DUPLICATE KEY UPDATE `ip` = %s', (self.sensor, self.sensor,))
                 r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
-                warnings.resetwarnings()
                 sensorid = int(r[0][0])
-            #self.simpleQuery('UNLOCK TABLES', '')
             try:
                 response = self.reader.city(entry["src_ip"])
                 city = response.city.name
@@ -183,10 +179,9 @@ class Output(cowrie.core.output.Output):
                 if r:
                     commandid = r[0][0]
                 else:
-                    warnings.filterwarnings('ignore')
                     yield self.db.runQuery(
-                        'INSERT IGNORE INTO `commands` (`input`, `inputhash`) VALUES (%s, %s)', (entry["input"], shasum,))
-                    warnings.resetwarnings()
+                        'INSERT INTO `commands` (`input`, `inputhash`) VALUES (%s, %s) ' +
+                        'ON DUPLICATE KEY UPDATE `inputhash` = %s', (entry["input"], shasum, shasum,))
                     r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                     commandid = int(r[0][0])
                 self.simpleQuery('INSERT INTO `input`' + \
@@ -202,10 +197,9 @@ class Output(cowrie.core.output.Output):
                 if r:
                     commandid = r[0][0]
                 else:
-                    warnings.filterwarnings('ignore')
                     yield self.db.runQuery(
-                        'INSERT IGNORE INTO `commands` (`input`, `inputhash`) VALUES (%s, %s)', (entry["input"], shasum,))
-                    warnings.resetwarnings()
+                        'INSERT INTO `commands` (`input`, `inputhash`) VALUES (%s, %s) ' +
+                        'ON DUPLICATE KEY UPDATE `inputhash` = %s', (entry["input"], shasum, shasum,))
                     r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                     commandid = int(r[0][0])
                 self.simpleQuery('INSERT INTO `input`' + \
@@ -235,10 +229,9 @@ class Output(cowrie.core.output.Output):
                 if r:
                     commandid = r[0][0]
                 else:
-                    warnings.filterwarnings('ignore')
                     yield self.db.runQuery(
-                        'INSERT IGNORE INTO `commands` (`input`, `inputhash`) VALUES (%s, %s)', (entry["input"], shasum,))
-                    warnings.resetwarnings()
+                        'INSERT INTO `commands` (`input`, `inputhash`) VALUES (%s, %s) ' +
+                        'ON DUPLICATE KEY UPDATE `inputhash` = %s', (entry["input"], shasum, shasum,))
                     r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                     commandid = int(r[0][0])
                 self.simpleQuery('INSERT INTO `input`' + \
@@ -255,11 +248,10 @@ class Output(cowrie.core.output.Output):
             if r:
                 id = int(r[0][0])
             else:
-                warnings.filterwarnings('ignore')
                 yield self.db.runQuery(
-                    'INSERT IGNORE INTO `clients` (`version`) VALUES (%s)', \
-                    (entry['version'],))
-                warnings.resetwarnings()
+                    'INSERT INTO `clients` (`version`) VALUES (%s) ' +
+                    'ON DUPLICATE KEY UPDATE `version`= %s', (entry['version'], \
+                    entry['version'],))
                 r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                 id = int(r[0][0])
             #self.simpleQuery('UNLOCK TABLES', '')
@@ -284,9 +276,8 @@ class Output(cowrie.core.output.Output):
                 (entry["session"], entry["ttylog"], entry["size"]))
 
         elif entry["eventid"] == 'cowrie.client.fingerprint':
-            warnings.filterwarnings('ignore')
             self.simpleQuery(
-                'INSERT IGNORE INTO `keyfingerprints` (`session`, `username`, `fingerprint`) VALUES (%s, %s, %s)',
-                (entry["session"], entry["username"], entry["fingerprint"]))
-            warnings.resetwarnings()
+                'INSERT INTO `keyfingerprints` (`session`, `username`, `fingerprint`) VALUES (%s, %s, %s) ' +
+                'ON DUPLICATE KEY UPDATE `fingerprint` = %s',
+                (entry["session"], entry["username"], entry["fingerprint"], entry["fingerprint"]))
 
