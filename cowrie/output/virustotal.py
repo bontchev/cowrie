@@ -37,6 +37,7 @@ from zope.interface import implementer
 
 import json
 import os
+
 try:
     from urllib.parse import urlparse, urlencode
 except ImportError:
@@ -51,6 +52,9 @@ from twisted.internet.ssl import ClientContextFactory
 
 import cowrie.core.output
 
+COWRIE_USER_AGENT = 'Cowrie Honeypot'
+VTAPI_URL = b'https://www.virustotal.com/vtapi/v2/'
+COMMENT = "First seen by Cowrie SSH honeypot http://github.com/micheloosterhof/cowrie"
 
 class Output(cowrie.core.output.Output):
     """
@@ -58,6 +62,10 @@ class Output(cowrie.core.output.Output):
 
     def __init__(self, cfg):
         self.apiKey = cfg.get('output_virustotal', 'api_key')
+        self.debug = cfg.getboolean('output_virustotal', 'debug', fallback=False)
+        self.upload = cfg.getboolean('output_virustotal', 'upload', fallback=True)
+        self.comment = cfg.getboolean('output_virustotal', 'comment', fallback=True)
+        self.commenttext = cfg.get('output_virustotal', 'commenttext', fallback=COMMENT)
         cowrie.core.output.Output.__init__(self, cfg)
 
 
@@ -65,7 +73,7 @@ class Output(cowrie.core.output.Output):
         """
         Start output plugin
         """
-        pass
+        self.agent = client.Agent(reactor, WebClientContextFactory())
 
 
     def stop(self):
@@ -79,46 +87,50 @@ class Output(cowrie.core.output.Output):
         """
         """
         if entry["eventid"] == 'cowrie.session.file_download':
-            log.msg("Sending url to VT")
-            self.posturl(entry["url"])
+            #TODO: RENABLE
+            #log.msg("Sending url to VT")
+            #self.scanurl(entry["url"])
 
-            log.msg("Sending file to VT")
-            p = urlparse(entry["url"]).path
-            if p == "":
-                fileName = entry["shasum"]
-            else:
-                b = os.path.basename(p)
-                if b == "":
-                    fileName = entry["shasum"]
-                else:
-                    fileName = b
-            self.postfile(entry["outfile"], fileName)
+            log.msg("Checking scan report at VT")
+            self.scanfile(entry)
 
         elif entry["eventid"] == 'cowrie.session.file_upload':
-            log.msg("Sending file to VT")
-            self.postfile(entry["outfile"], entry["filename"])
+            log.msg("Checking scan report at VT")
+            self.scanfile(entry["shasum"])
+
+            #log.msg("Sending file to VT")
+            #self.postfile(entry["outfile"], entry["filename"])
 
 
-    def postfile(self, artifact, fileName):
+    def scanfile(self, entry):
         """
-        Send a file to VirusTotal
+        Check file scan report for a hash
+        Argument is full event so we can access full file later on
         """
-        vtUrl = "https://www.virustotal.com/vtapi/v2/file/scan"
-        contextFactory = WebClientContextFactory()
-        fields = {('apikey', self.apiKey)}
-        files = {('file', fileName, open(artifact, 'rb'))}
-        contentType, body = encode_multipart_formdata(fields, files)
-        producer = StringProducer(body)
-        headers = http_headers.Headers({
-            'User-Agent': ['Cowrie SSH Honeypot'],
-            'Accept': ['*/*'],
-            'Content-Type': [contentType]
-        })
+        vtUrl = VTAPI_URL+b'file/report'
+        headers = http_headers.Headers({'User-Agent': [COWRIE_USER_AGENT]})
+        fields = {'apikey': self.apiKey, 'resource': entry["shasum"]}
+        body = StringProducer(urlencode(fields).encode("utf-8"))
+        d = self.agent.request(b'POST', vtUrl, headers, body)
 
-        agent = client.Agent(reactor, contextFactory)
-        d = agent.request('POST', vtUrl, headers, producer)
+        def cbResponse(response):
+            """
+            Main response callback, check HTTP response code
+            """
+            if response.code == 200:
+                d = client.readBody(response)
+                d.addCallback(cbBody)
+                #d.addErrback(cbPartial)
+                return d
+            else:
+                log.msg("VT Request failed: {} {}".format(response.code, response.phrase))
+                return
+
 
         def cbBody(body):
+            """
+            Received body
+            """
             return processResult(body)
 
 
@@ -129,52 +141,66 @@ class Output(cowrie.core.output.Output):
             return processResult(failure.value.response)
 
 
-        def cbResponse(response):
-            if response.code == 200:
-                d = client.readBody(response)
-                d.addCallback(cbBody)
-                d.addErrback(cbPartial)
-                return d
-            else:
-                log.msg("VT Request failed: {} {}".format(response.code, response.phrase))
-                return
-
-
         def cbError(failure):
+            log.msg("VT: Error in scanfile")
             failure.printTraceback()
 
 
         def processResult(result):
-            log.msg( "VT postfile result: {}".format(result))
+            """
+            Extract the information we need from the body
+            """
+            if self.debug:
+                log.msg("VT scanfile result: {}".format(result))
             j = json.loads(result)
+            log.msg("VT: {}".format(j["verbose_msg"]))
             if j["response_code"] == 0:
-                log.msg( "response=0: posting comment")
-                d = self.postcomment(j["resource"])
-                return d
+                log.msg("VT: response=0: this is a new file")
+                p = urlparse(entry["url"]).path
+                if p == "":
+                    fileName = entry["shasum"]
+                else:
+                    b = os.path.basename(p)
+                    if b == "":
+                        fileName = entry["shasum"]
+                    else:
+                        fileName = b
+                if self.upload == True:
+                    return self.postfile(entry["outfile"], fileName)
+                else:
+                    return
+            elif j["response_code"] == 1:
+                log.msg("VT: response=1: this has been scanned before")
+                log.msg("VT: {}/{} bad; permalink: {}".format(j["positives"], j["total"], ["permalink"]))
+            elif j["response_code"] == -2:
+                log.msg("VT: response=1: this has been queued for analysis already")
+                log.msg("VT: permalink: {}".format(j["permalink"]))
+            else:
+                log.msg("VT: unexpected response code".format(j["response_code"]))
 
         d.addCallback(cbResponse)
         d.addErrback(cbError)
         return d
 
 
-    def posturl(self, scanUrl):
+    def postfile(self, artifact, fileName):
         """
-        Send a URL to VirusTotal with Twisted
-
-        response_code:
-        If the item you searched for was not present in VirusTotal's dataset this result will be 0.
-        If the requested item is still queued for analysis it will be -2.
-        If the item was indeed present and it could be retrieved it will be 1.
+        Send a file to VirusTotal
         """
-        vtUrl = "https://www.virustotal.com/vtapi/v2/url/scan"
-        headers = http_headers.Headers({'User-Agent': ['Cowrie SSH Honeypot']})
-        fields = {"apikey": self.apiKey, "url": scanUrl}
-        data = urlencode(fields)
-        body = StringProducer(data)
-        contextFactory = WebClientContextFactory()
+        vtUrl = VTAPI_URL+b'file/scan'
+        fields = {(b'apikey', self.apiKey)}
+        files = {(b'file', fileName.encode('utf-8'), open(artifact, 'rb'))}
+        if self.debug:
+            print("submitting to VT: "+repr(files))
+        contentType, body = encode_multipart_formdata(fields, files)
+        producer = StringProducer(body)
+        headers = http_headers.Headers({
+            'User-Agent': [COWRIE_USER_AGENT],
+            'Accept': ['*/*'],
+            'Content-Type': [contentType]
+        })
 
-        agent = client.Agent(reactor, contextFactory)
-        d = agent.request('POST', vtUrl, headers, body)
+        d = self.agent.request(b'POST', vtUrl, headers, producer)
 
         def cbBody(body):
             return processResult(body)
@@ -184,11 +210,12 @@ class Output(cowrie.core.output.Output):
             """
             Google HTTP Server does not set Content-Length. Twisted marks it as partial
             """
-            #failure.printTraceback()
             return processResult(failure.value.response)
 
 
         def cbResponse(response):
+            """
+            """
             if response.code == 200:
                 d = client.readBody(response)
                 d.addCallback(cbBody)
@@ -200,16 +227,92 @@ class Output(cowrie.core.output.Output):
 
 
         def cbError(failure):
+            """
+            """
             failure.printTraceback()
 
 
         def processResult(result):
+            """
+            """
+            if self.debug:
+                log.msg("VT postfile result: {}".format(result))
             j = json.loads(result)
-            log.msg("VT posturl result: {}".format(repr(j)))
-            if j["response_code"] == 0:
-                log.msg( "response=0: posting comment")
-                d = self.postcomment(j["resource"])
+            # This is always a new resource, since we did the scan before
+            # so always create the comment
+            log.msg( "response=0: posting comment")
+            if self.comment == True:
+                return self.postcomment(j["resource"])
+            else:
+                return
+
+        d.addCallback(cbResponse)
+        d.addErrback(cbError)
+        return d
+
+
+    def scanurl(self, url):
+        """
+        Check url scan report for a hash
+        """
+        vtUrl = VTAPI_URL+b'url/report'
+        headers = http_headers.Headers({'User-Agent': [COWRIE_USER_AGENT]})
+        fields = {'apikey': self.apiKey, 'resource': url, 'scan': 1}
+        body = StringProducer(urlencode(fields).encode("utf-8"))
+        d = self.agent.request(b'POST', vtUrl, headers, body)
+
+        def cbResponse(response):
+            """
+            Main response callback, checks HTTP response code
+            """
+            if response.code == 200:
+                d = client.readBody(response)
+                d.addCallback(cbBody)
+                #d.addErrback(cbPartial)
                 return d
+            else:
+                log.msg("VT Request failed: {} {}".format(response.code, response.phrase))
+                return
+
+
+        def cbBody(body):
+            """
+            Received body
+            """
+            return processResult(body)
+
+
+        def cbPartial(failure):
+            """
+            Google HTTP Server does not set Content-Length. Twisted marks it as partial
+            """
+            return processResult(failure.value.response)
+
+
+        def cbError(failure):
+            log.msg("cbError")
+            failure.printTraceback()
+
+
+        def processResult(result):
+            """
+            Extract the information we need from the body
+            """
+            j = json.loads(result)
+            # log.msg("VT scanurl result: {}".format(repr(j)))
+            log.msg("VT: {}".format(j["verbose_msg"]))
+            if j["response_code"] == 0:
+                log.msg("VT: response=0: this is a new file")
+                return d
+            elif j["response_code"] == 1:
+                log.msg("VT: response=1: this has been scanned before")
+                log.msg("VT: {}/{} bad".format(j["positives"], j["total"]))
+                log.msg("VT: permalink: {}".format(j["permalink"]))
+            elif j["response_code"] == -2:
+                log.msg("VT: response=1: this has been queued for analysis already")
+                log.msg("VT: permalink: {}".format(j["permalink"]))
+            else:
+                log.msg("VT: unexpected response code".format(j["response_code"]))
 
         d.addCallback(cbResponse)
         d.addErrback(cbError)
@@ -220,19 +323,17 @@ class Output(cowrie.core.output.Output):
         """
         Send a comment to VirusTotal with Twisted
         """
-        vtUrl = "https://www.virustotal.com/vtapi/v2/comments/put"
+        vtUrl = VTAPI_URL+b'comments/put'
         parameters = { "resource": resource,
-                       "comment": "First seen by Cowrie SSH honeypot http://github.com/micheloosterhof/cowrie",
+                       "comment": self.commenttext,
                        "apikey": self.apiKey}
-        headers = http_headers.Headers({'User-Agent': ['Cowrie SSH Honeypot']})
-        data = urlencode(parameters)
-        body = StringProducer(data)
-        contextFactory = WebClientContextFactory()
-
-        agent = client.Agent(reactor, contextFactory)
-        d = agent.request('POST', vtUrl, headers, body)
+        headers = http_headers.Headers({'User-Agent': [COWRIE_USER_AGENT]})
+        body = StringProducer(urlencode(parameters).encode("utf-8"))
+        d = self.agent.request(b'POST', vtUrl, headers, body.encode('utf-8'))
 
         def cbBody(body):
+            """
+            """
             return processResult(body)
 
 
@@ -244,6 +345,8 @@ class Output(cowrie.core.output.Output):
 
 
         def cbResponse(response):
+            """
+            """
             if response.code == 200:
                 d = client.readBody(response)
                 d.addCallback(cbBody)
@@ -255,12 +358,17 @@ class Output(cowrie.core.output.Output):
 
 
         def cbError(failure):
+            """
+            """
             failure.printTraceback()
 
 
         def processResult(result):
+            """
+            """
+            if self.debug:
+                log.msg("VT postcomment result: {}".format(result))
             j = json.loads(result)
-            log.msg( "VT postcomment result: {}".format(repr(j)))
             return j["response_code"]
 
         d.addCallback(cbResponse)
@@ -288,15 +396,21 @@ class StringProducer(object):
 
 
     def startProducing(self, consumer):
+        """
+        """
         consumer.write(self.body)
         return defer.succeed(None)
 
 
     def pauseProducing(self):
+        """
+        """
         pass
 
 
     def stopProducing(self):
+        """
+        """
         pass
 
 
@@ -307,24 +421,26 @@ def encode_multipart_formdata(fields, files):
     files is a sequence of (name, filename, value) elements for data to be uploaded as files
     Return (content_type, body) ready for httplib.HTTPS instance
     """
-    BOUNDARY = '----------ThIs_Is_tHe_bouNdaRY_$'
-    CRLF = '\r\n'
+    BOUNDARY = b'----------ThIs_Is_tHe_bouNdaRY_$'
     L = []
     for (key, value) in fields:
-        L.append('--' + BOUNDARY)
-        L.append('Content-Disposition: form-data; name="%s"' % key)
-        L.append('')
-        L.append(value)
+        L.append(b'--' + BOUNDARY)
+        L.append(b'Content-Disposition: form-data; name="%s"' % key.encode())
+        L.append(b'')
+        L.append(value.encode())
     for (key, filename, value) in files:
-        L.append('--' + BOUNDARY)
-        L.append('Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename))
-        L.append('Content-Type: application/octet-stream')
-        L.append('')
+        L.append(b'--' + BOUNDARY)
+        L.append(b'Content-Disposition: form-data; name="%s"; filename="%s"' % (key.encode(), filename.encode()))
+        L.append(b'Content-Type: application/octet-stream')
+        L.append(b'')
         L.append(value.read())
-    L.append('--' + BOUNDARY + '--')
-    L.append('')
-    body = CRLF.join(L)
-    content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
+    L.append(b'--' + BOUNDARY + b'--')
+    L.append(b'')
+    body = b'\r\n'.join(L)
+    content_type = b'multipart/form-data; boundary=%s' % BOUNDARY
+
+    print("content_type: " + str(type(content_type)) + " " + repr(content_type))
+
     return content_type, body
 
 

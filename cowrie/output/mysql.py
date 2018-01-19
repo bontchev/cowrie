@@ -241,7 +241,6 @@ class Output(cowrie.core.output.Output):
                     entry["realm"], commandid))
 
         elif entry["eventid"] == 'cowrie.client.version':
-            #self.simpleQuery('LOCK TABLES `clients` WRITE', '')
             r = yield self.db.runQuery(
                 'SELECT `id` FROM `clients` WHERE `version` = %s', \
                 (entry['version'],))
@@ -254,7 +253,6 @@ class Output(cowrie.core.output.Output):
                     entry['version'],))
                 r = yield self.db.runQuery('SELECT LAST_INSERT_ID()')
                 id = int(r[0][0])
-            #self.simpleQuery('UNLOCK TABLES', '')
             self.simpleQuery(
                 'UPDATE `sessions` SET `client` = %s WHERE `id` = %s',
                 (id, entry["session"]))

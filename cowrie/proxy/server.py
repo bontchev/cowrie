@@ -27,52 +27,25 @@
 # SUCH DAMAGE.
 
 """
-Docstring
+This module contains ...
 """
 
 from __future__ import division, absolute_import
 
-import json
-import os
+import twisted.python.log as log
 
-import cowrie.core.output
-import cowrie.python.logfile
 
-class Output(cowrie.core.output.Output):
+class CowrieServer(object):
     """
-    Docstring class
+    In traditional Kippo each connection gets its own simulated machine.
+    This is not always ideal, sometimes two connections come from the same
+    source IP address. we want to give them the same environment as well.
+    So files uploaded through SFTP are visible in the SSH session.
+    This class represents a 'virtual server' that can be shared between
+    multiple Cowrie connections
     """
-
-    def __init__(self, cfg):
-        cowrie.core.output.Output.__init__(self, cfg)
-        fn = cfg.get('output_jsonlog', 'logfile')
-        dirs = os.path.dirname(fn)
-        base = os.path.basename(fn)
-        self.outfile = cowrie.python.logfile.CowrieDailyLogFile(base, dirs, defaultMode=0o664)
-
-
-    def start(self):
-        """
-        """
-        pass
-
-
-    def stop(self):
-        """
-        """
-        self.outfile.flush()
-
-
-    def write(self, logentry):
-        """
-        """
-        for i in list(logentry.keys()):
-            # Remove twisted 15 legacy keys
-            if i.startswith('log_'):
-                del logentry[i]
-            elif i == "time":
-                del logentry[i]
-        json.dump(logentry, self.outfile)
-        self.outfile.write('\n')
-        self.outfile.flush()
+    def __init__(self, realm):
+        self.cfg = realm.cfg
+        self.avatars = []
+        self.hostname = self.cfg.get('honeypot', 'hostname')
 

@@ -1,5 +1,5 @@
 # csirtg
-csirtgsdk>=0.0.0a6 # Specify version because pip won't install pre-release versions by default
+csirtgsdk>=0.0.0a17 # Specify version because pip won't install pre-release versions by default
 
 # dshield
 requests
@@ -10,6 +10,8 @@ pyes
 # mysql
 MySQL-python
 hashlib
+geoip2
+Geohash
 
 # mongodb
 pymongo
@@ -17,8 +19,12 @@ pymongo
 # rethinkdblog
 rethinkdb
 
+# s3
+botocore
+
 # slack
 slackclient
 
 # splunklegacy
+# For more info, see documentation /home/cowrie/cowrie/doc/splunk/README.md
 splunk-sdk

@@ -291,7 +291,7 @@ class Output(cowrie.core.output.Output):
                 'hostIP': entry["dst_ip"], 'hostPort': entry["dst_port"],
                 'loggedin': None, 'credentials':[], 'commands':[],
                 'unknownCommands':[], 'urls':[], 'version': None,
-                'ttylog': None, 'hashes': set()}
+                'ttylog': None, 'hashes': set(), 'protocol': entry['protocol']}
 
         elif entry["eventid"] == 'cowrie.login.success':
             u, p = entry['username'], entry['password']
@@ -324,7 +324,7 @@ class Output(cowrie.core.output.Output):
         elif entry["eventid"] == 'cowrie.log.closed':
             # entry["ttylog"]
             with open( entry["ttylog"]) as ttylog:
-                self.meta['ttylog'] = ttylog.read().encode('hex')
+                self.meta[session]['ttylog'] = ttylog.read().encode('hex')
 
         elif entry["eventid"] == 'cowrie.session.closed':
             log.msg('publishing metadata to hpfeeds')
