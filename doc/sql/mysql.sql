@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `auth` (
 
 CREATE TABLE IF NOT EXISTS `clients` (
   `id` int(4) NOT NULL auto_increment,
-  `version` varchar(50) NOT NULL,
+  `version` varchar(80) NOT NULL,
   UNIQUE (`version`),
   PRIMARY KEY (`id`)
 ) ;
