@@ -232,10 +232,12 @@ class command_wget(HoneyPotCommand):
             self.errorWrite(errorMessage + '\n')
             # Real wget also adds this:
         if hasattr(error, 'webStatus') and hasattr(error, 'webMessage'):  # exceptions
-            dateWithError = '{} ERROR '.format(time.strftime('%Y-%m-%d %T'))
-            self.errorWrite(dateWithError + str(error.webStatus) + ': ' + error.webMessage + '\n')
+            self.errorWrite('{} ERROR {}: {}\n'.format(time.strftime('%Y-%m-%d %T'), error.webStatus.decode(), error.webMessage.decode()))
         else:
             self.errorWrite('{} ERROR 404: Not Found.\n'.format(time.strftime('%Y-%m-%d %T')))
+        self.protocol.logDispatch(eventid='cowrie.session.file_download.failed',
+                                  format='Attempt to download file(s) from URL (%(url)s) failed',
+                                  url=self.url)
         self.exit()
 
 commands['/usr/bin/wget'] = command_wget

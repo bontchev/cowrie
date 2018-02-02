@@ -54,7 +54,7 @@ import cowrie.core.output
 
 COWRIE_USER_AGENT = 'Cowrie Honeypot'
 VTAPI_URL = b'https://www.virustotal.com/vtapi/v2/'
-COMMENT = "First seen by Cowrie SSH honeypot http://github.com/micheloosterhof/cowrie"
+COMMENT = "First seen by #Cowrie SSH/telnet Honeypot http://github.com/micheloosterhof/cowrie"
 
 class Output(cowrie.core.output.Output):
     """
@@ -188,10 +188,10 @@ class Output(cowrie.core.output.Output):
         Send a file to VirusTotal
         """
         vtUrl = VTAPI_URL+b'file/scan'
-        fields = {(b'apikey', self.apiKey)}
-        files = {(b'file', fileName.encode('utf-8'), open(artifact, 'rb'))}
+        fields = {('apikey', self.apiKey)}
+        files = {('file', fileName, open(artifact, 'rb'))}
         if self.debug:
-            print("submitting to VT: "+repr(files))
+            log.msg("submitting to VT: "+repr(files))
         contentType, body = encode_multipart_formdata(fields, files)
         producer = StringProducer(body)
         headers = http_headers.Headers({
@@ -329,7 +329,7 @@ class Output(cowrie.core.output.Output):
                        "apikey": self.apiKey}
         headers = http_headers.Headers({'User-Agent': [COWRIE_USER_AGENT]})
         body = StringProducer(urlencode(parameters).encode("utf-8"))
-        d = self.agent.request(b'POST', vtUrl, headers, body.encode('utf-8'))
+        d = self.agent.request(b'POST', vtUrl, headers, body)
 
         def cbBody(body):
             """
@@ -438,8 +438,6 @@ def encode_multipart_formdata(fields, files):
     L.append(b'')
     body = b'\r\n'.join(L)
     content_type = b'multipart/form-data; boundary=%s' % BOUNDARY
-
-    print("content_type: " + str(type(content_type)) + " " + repr(content_type))
 
     return content_type, body
 
