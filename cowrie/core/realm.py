@@ -48,15 +48,17 @@ from cowrie.proxy import avatar as proxyavatar
 from cowrie.proxy import server as proxyserver
 from cowrie.telnet import session
 
+from cowrie.core.config import CONFIG
+
 
 @implementer(twisted.cred.portal.IRealm)
 class HoneyPotRealm(object):
     """
     """
 
-    def __init__(self, cfg):
-        self.cfg = cfg
-	# self.servers = {}
+    def __init__(self):
+        pass
+	    # self.servers = {}
 
 
     def requestAvatar(self, avatarId, mind, *interfaces):
@@ -76,11 +78,11 @@ class HoneyPotRealm(object):
 	#    log.msg( "Refer: %s" % repr( gc.get_referrers(self.servers[i])))
 
         try:
-            backend = self.cfg.get('honeypot', 'backend')
+            backend = CONFIG.get('honeypot', 'backend')
         except:
-            backend = "shell"
+            backend = 'shell'
 
-        if backend == "shell":
+        if backend == 'shell':
             if conchinterfaces.IConchUser in interfaces:
                 serv = shellserver.CowrieServer(self)
                 user = shellavatar.CowrieUser(avatarId, serv)
@@ -90,7 +92,7 @@ class HoneyPotRealm(object):
                 user = session.HoneyPotTelnetSession(avatarId, serv)
                 return interfaces[0], user, user.logout
             raise NotImplementedError("No supported interfaces found.")
-        elif backend == "proxy":
+        elif backend == 'proxy':
             if conchinterfaces.IConchUser in interfaces:
                 serv = proxyserver.CowrieServer(self)
                 user = proxyavatar.CowrieUser(avatarId, serv)

@@ -21,6 +21,8 @@ from cowrie.shell import pwd
 from cowrie.shell import protocol as cproto
 from cowrie.insults import insults
 
+from cowrie.core.config import CONFIG
+
 class HoneyPotTelnetSession(TelnetBootstrapProtocol):
     """
     """
@@ -31,10 +33,9 @@ class HoneyPotTelnetSession(TelnetBootstrapProtocol):
     def __init__(self, username, server):
         self.username = username
         self.server = server
-        self.cfg = self.server.cfg
 
         try:
-            pwentry = pwd.Passwd(self.cfg).getpwnam(self.username)
+            pwentry = pwd.Passwd().getpwnam(self.username)
             self.uid = pwentry["pw_uid"]
             self.gid = pwentry["pw_gid"]
             self.home = pwentry["pw_dir"]
@@ -89,7 +90,6 @@ class HoneyPotTelnetSession(TelnetBootstrapProtocol):
         """
         TelnetBootstrapProtocol.connectionLost(self, reason)
         self.server = None
-        self.cfg = None
         self.avatar = None
         self.protocol = None
 

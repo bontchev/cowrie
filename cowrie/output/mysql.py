@@ -17,6 +17,9 @@ from twisted.python import log
 
 import cowrie.core.output
 
+from cowrie.core.config import CONFIG
+
+
 class ReconnectingConnectionPool(adbapi.ConnectionPool):
     """
     Reconnecting adbapi connection pool for MySQL.
@@ -48,15 +51,23 @@ class Output(cowrie.core.output.Output):
     """
     docstring here
     """
-    debug = False
     db = None
-    reader = None
-    store_input = True
 
-    def __init__(self, cfg):
-        self.cfg = cfg
-        self.geoipdb = '{}/GeoLite2-City.mmdb'.format(cfg.get('honeypot', 'data_path'))
-        cowrie.core.output.Output.__init__(self, cfg)
+    def __init__(self):
+        try:
+            self.store_input = CONFIG.getboolean('output_mysql', 'store_input')
+        except:
+            store_input = True
+        try:
+            self.debug = CONFIG.getboolean('output_mysql', 'debug')
+        except:
+            debug = False
+
+        try:
+            self.geoipdb = '{}/GeoLite2-City.mmdb'.format(CONFIG.get('honeypot', 'data_path'))
+        except:
+            reader = None
+        cowrie.core.output.Output.__init__(self)
 
 
     def start(self):
@@ -67,21 +78,18 @@ class Output(cowrie.core.output.Output):
             self.reader = geoip2.database.Reader(self.geoipdb)
         except Exception as e:
             log.msg("could not open GeoIP database file " + self.geoipdb + ".")
-        if self.cfg.has_option('output_mysql', 'debug'):
-            self.debug = self.cfg.getboolean('output_mysql', 'debug')
-        if self.cfg.has_option('output_mysql', 'store_input'):
-            self.store_input = self.cfg.getboolean('output_mysql', 'store_input')
 
-        if self.cfg.has_option('output_mysql', 'port'):
-            port = int(self.cfg.get('output_mysql', 'port'))
-        else:
+        try:
+            port = CONFIG.getint('output_mysql', 'port')
+        except:
             port = 3306
+
         try:
             self.db = ReconnectingConnectionPool('MySQLdb',
-                host = self.cfg.get('output_mysql', 'host'),
-                db = self.cfg.get('output_mysql', 'database'),
-                user = self.cfg.get('output_mysql', 'username'),
-                passwd = self.cfg.get('output_mysql', 'password'),
+                host = CONFIG.get('output_mysql', 'host'),
+                db = CONFIG.get('output_mysql', 'database'),
+                user = CONFIG.get('output_mysql', 'username'),
+                passwd = CONFIG.get('output_mysql', 'password'),
                 port = port,
                 cp_min = 1,
                 cp_max = 1)

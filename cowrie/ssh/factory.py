@@ -17,7 +17,9 @@ from twisted.conch.openssh_compat import primes
 from cowrie.ssh import connection
 from cowrie.ssh import userauth
 from cowrie.ssh import transport
-from cowrie.core import keys as cowriekeys
+from cowrie.ssh import keys as cowriekeys
+
+from cowrie.core.config import CONFIG
 
 
 class CowrieSSHFactory(factory.SSHFactory):
@@ -35,10 +37,6 @@ class CowrieSSHFactory(factory.SSHFactory):
     publicKeys = None
     primes = None
     tac = None # gets set later
-
-    def __init__(self, cfg):
-        self.cfg = cfg
-
 
     def logDispatch(self, *msg, **args):
         """
@@ -58,8 +56,8 @@ class CowrieSSHFactory(factory.SSHFactory):
         self.starttime = time.time()
 
         # Load/create keys
-        rsaPubKeyString, rsaPrivKeyString = cowriekeys.getRSAKeys(self.cfg)
-        dsaPubKeyString, dsaPrivKeyString = cowriekeys.getDSAKeys(self.cfg)
+        rsaPubKeyString, rsaPrivKeyString = cowriekeys.getRSAKeys()
+        dsaPubKeyString, dsaPrivKeyString = cowriekeys.getDSAKeys()
         self.publicKeys = {
           b'ssh-rsa': keys.Key.fromString(data=rsaPubKeyString),
           b'ssh-dss': keys.Key.fromString(data=dsaPubKeyString)}
@@ -93,7 +91,7 @@ class CowrieSSHFactory(factory.SSHFactory):
         t = transport.HoneyPotSSHTransport()
 
         try:
-            t.ourVersionString = self.cfg.get('ssh', 'version').encode('ascii')
+            t.ourVersionString = CONFIG.get('ssh', 'version').encode('ascii')
         except:
             t.ourVersionString = b"SSH-2.0-OpenSSH_6.0p1 Debian-4+deb7u2"
 

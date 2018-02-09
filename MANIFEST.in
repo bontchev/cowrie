@@ -1,0 +1,7 @@
+include cowrie.cfg.dist
+include cowrie-launch.cfg.dist
+include *.md
+recursive-include twisted *.py
+recursive-include data fs.pickle userdb.txt
+graft honeyfs *
+graft txtcmds *
