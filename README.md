@@ -33,7 +33,7 @@ Additional functionality over standard kippo:
 ## Docker
 
 Docker versions are available.
-* Get the Dockerfile directly at https://github.com/micheloosterhof/docker-cowrie
+* Get the Dockerfile directly at https://github.com/cowrie/docker-cowrie
 * Run from the Docker regstry with: ```docker pull cowrie/cowrie```
 
 ## Requirements
@@ -73,16 +73,7 @@ Run:
 ```docker pull cowrie/cowrie```
 to download images from hub.docker.com
 
-Or look at https://github.com/micheloosterhof/docker-cowrie for the Dockerfile
-
-## Contributing
-
-Cowrie welcomes any kind of contribution, please follow the next steps:
-
-* Fork the project on github.com.
-* Create a new branch.
-* Commit changes to the new branch.
-* Send a pull request.
+Or look at https://github.com/cowrie/docker-cowrie for the Dockerfile
 
 ## Contributors
 

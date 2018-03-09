@@ -2,6 +2,7 @@ cowrie.cfg
 cowrie.pid
 bin/cowrie-launch.cfg
 data/GeoLite2-City.mmdb
+data/GeoLite2-ASN.mmdb
 etc/ssh_host_dsa_key
 etc/ssh_host_dsa_key.pub
 etc/ssh_host_rsa_key
