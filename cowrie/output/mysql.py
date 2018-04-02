@@ -51,11 +51,13 @@ class Output(cowrie.core.output.Output):
     debug = False
     db = None
     reader = None
+    reader2 = None
     store_input = True
 
     def __init__(self, cfg):
         self.cfg = cfg
         self.geoipdb = '{}/GeoLite2-City.mmdb'.format(cfg.get('honeypot', 'data_path'))
+        self.geoipdb2 = '{}/GeoLite2-ASN.mmdb'.format(cfg.get('honeypot', 'data_path'))
         cowrie.core.output.Output.__init__(self, cfg)
 
 
@@ -67,6 +69,10 @@ class Output(cowrie.core.output.Output):
             self.reader = geoip2.database.Reader(self.geoipdb)
         except Exception as e:
             log.msg("could not open GeoIP database file " + self.geoipdb + ".")
+        try:
+            self.reader2 = geoip2.database.Reader(self.geoipdb2)
+        except Exception as e:
+            log.msg("could not open GeoIP database file " + self.geoipdb2 + ".")
         if self.cfg.has_option('output_mysql', 'debug'):
             self.debug = self.cfg.getboolean('output_mysql', 'debug')
         if self.cfg.has_option('output_mysql', 'store_input'):
@@ -95,6 +101,8 @@ class Output(cowrie.core.output.Output):
         """
         if self.reader is not None:
             self.reader.close()
+        if self.reader2 is not None:
+            self.reader2.close()
         self.db.close()
 
 
@@ -149,13 +157,21 @@ class Output(cowrie.core.output.Output):
                 country_code = ''
                 latitude = 0
                 longitude = 0
+            try:
+                response2 = self.reader2.asn(entry["src_ip"])
+                if response2.autonomous_system_organization is not None:
+                    org = response2.autonomous_system_organization.encode('utf8')
+                else:
+                    org = ''
+            except:
+                org = ''
             self.simpleQuery(
                 'INSERT INTO `sessions` (`id`, `starttime`, `sensor`, `ip`, ' +
-                '`port`, `country_name`, `country_iso_code`, `city_name`, `latitude`, ' +
-                '`longitude`, `geohash`)' +
-                ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                '`port`, `country_name`, `country_iso_code`, `city_name`, `org`, ' +
+                '`latitude`, `longitude`, `geohash`)' +
+                ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
                 (entry["session"], entry["time"], sensorid, entry["src_ip"], entry["dst_port"],
-                country.encode('utf8'), country_code, city.encode('utf8'),
+                country.encode('utf8'), country_code, city.encode('utf8'), org,
                 str(latitude), str(longitude), Geohash.encode(latitude, longitude)))
         elif entry["eventid"] == 'cowrie.login.success':
             self.simpleQuery('INSERT INTO `auth` (`session`, `success`' + \

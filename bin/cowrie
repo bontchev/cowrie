@@ -16,9 +16,17 @@ config_get() {
 }
 
 AUTHBIND_ENABLED="$(config_get AUTHBIND_ENABLED)";
-VIRTUALENV_ENABLED="$(config_get VIRTUALENV_ENABLED)";
+COWRIE_VIRTUAL_ENV="$(config_get COWRIE_VIRTUAL_ENV)";
 DAEMONIZE="$(config_get DAEMONIZE)";
 UMASK="$(config_get UMASK)";
+
+################################################################################
+## don't modify below here ##
+################################################################################
+
+# The default Python virtual environment is "cowrie-env". If you set the variable
+# COWRIE_VIRTUAL_ENV you can override this
+DEFAULT_VIRTUAL_ENV=cowrie-env
 
 find_cowrie_directory() {
     # Determine Cowrie directory

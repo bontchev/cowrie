@@ -29,7 +29,7 @@ of each month, so download it every second Wednesday), create a crontab job
 
 ```
 # Update the geoIP database at midnight on the 2nd Wednesday of each month:
-0 0 * * 3 [ `/bin/date +\%d` -le 7 ] && cd /home/cowrie/cowrie/data && /usr/bin/wget -q http://geolite.maxmind.com/       download/geoip/database/GeoLite2-City.mmdb.gz && /bin/gzip -df GeoLite2-City.mmdb.gz
+0 0 8-14 * * [ $(/bin/date +\%u) -eq 3 ] && cd /home/cowrie/cowrie/data && /usr/bin/wget -q http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz && /bin/gzip -df GeoLite2-City.mmdb.gz
 ```
 
 ## MySQL Configuration
