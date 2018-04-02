@@ -52,21 +52,18 @@ class Output(cowrie.core.output.Output):
     docstring here
     """
     db = None
+    reader = None
+    reader2 = None
+    store_input = True
 
     def __init__(self):
         try:
-            self.store_input = CONFIG.getboolean('output_mysql', 'store_input')
-        except:
-            store_input = True
-        try:
             self.debug = CONFIG.getboolean('output_mysql', 'debug')
         except:
-            debug = False
+            self.debug = False
 
-        try:
-            self.geoipdb = '{}/GeoLite2-City.mmdb'.format(CONFIG.get('honeypot', 'data_path'))
-        except:
-            reader = None
+        self.geoipdb = '{}/GeoLite2-City.mmdb'.format(CONFIG.get('honeypot', 'data_path'))
+        self.geoipdb2 = '{}/GeoLite2-ASN.mmdb'.format(CONFIG.get('honeypot', 'data_path'))
         cowrie.core.output.Output.__init__(self)
 
 
@@ -78,6 +75,14 @@ class Output(cowrie.core.output.Output):
             self.reader = geoip2.database.Reader(self.geoipdb)
         except Exception as e:
             log.msg("could not open GeoIP database file " + self.geoipdb + ".")
+        try:
+            self.reader2 = geoip2.database.Reader(self.geoipdb2)
+        except Exception as e:
+            log.msg("could not open GeoIP database file " + self.geoipdb2 + ".")
+        try:
+            self.store_input = CONFIG.getboolean('output_mysql', 'store_input')
+        except:
+            self.store_input = False
 
         try:
             port = CONFIG.getint('output_mysql', 'port')
@@ -89,7 +94,7 @@ class Output(cowrie.core.output.Output):
                 host = CONFIG.get('output_mysql', 'host'),
                 db = CONFIG.get('output_mysql', 'database'),
                 user = CONFIG.get('output_mysql', 'username'),
-                passwd = CONFIG.get('output_mysql', 'password'),
+                passwd = CONFIG.get('output_mysql', 'password', raw=True),
                 port = port,
                 cp_min = 1,
                 cp_max = 1)
@@ -103,6 +108,8 @@ class Output(cowrie.core.output.Output):
         """
         if self.reader is not None:
             self.reader.close()
+        if self.reader2 is not None:
+            self.reader2.close()
         self.db.close()
 
 
@@ -157,13 +164,21 @@ class Output(cowrie.core.output.Output):
                 country_code = ''
                 latitude = 0
                 longitude = 0
+            try:
+                response2 = self.reader2.asn(entry["src_ip"])
+                if response2.autonomous_system_organization is not None:
+                    org = response2.autonomous_system_organization.encode('utf8')
+                else:
+                    org = ''
+            except:
+                org = ''
             self.simpleQuery(
                 'INSERT INTO `sessions` (`id`, `starttime`, `sensor`, `ip`, ' +
-                '`port`, `country_name`, `country_iso_code`, `city_name`, `latitude`, ' +
-                '`longitude`, `geohash`)' +
-                ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                '`port`, `country_name`, `country_iso_code`, `city_name`, `org`, ' +
+                '`latitude`, `longitude`, `geohash`)' +
+                ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
                 (entry["session"], entry["time"], sensorid, entry["src_ip"], entry["dst_port"],
-                country.encode('utf8'), country_code, city.encode('utf8'),
+                country.encode('utf8'), country_code, city.encode('utf8'), org,
                 str(latitude), str(longitude), Geohash.encode(latitude, longitude)))
         elif entry["eventid"] == 'cowrie.login.success':
             self.simpleQuery('INSERT INTO `auth` (`session`, `success`' + \
@@ -178,6 +193,11 @@ class Output(cowrie.core.output.Output):
                 ' VALUES (%s, %s, %s, %s, FROM_UNIXTIME(%s))',
                 (entry["session"], 0, entry['username'], entry['password'],
                 entry["time"]))
+                
+        elif entry["eventid"] == 'cowrie.session.params':
+            self.simpleQuery('INSERT INTO `params` (`session`, `arch`)' + \
+                ' VALUES (%s, %s)',
+                (entry["session"], entry["arch"]))
 
         elif entry["eventid"] == 'cowrie.command.success':
             if self.store_input:
@@ -221,6 +241,13 @@ class Output(cowrie.core.output.Output):
                 ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s)',
                 (entry["session"], entry["time"],
                 entry['url'], entry['outfile'], entry['shasum']))
+	
+        elif entry["eventid"] == 'cowrie.session.file_download.failed':
+            self.simpleQuery('INSERT INTO `downloads`' + \
+                ' (`session`, `timestamp`, `url`, `outfile`, `shasum`)' + \
+                ' VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s)',
+                (entry["session"], entry["time"],
+                entry['url'], 'NULL', 'NULL'))
 
         elif entry["eventid"] == 'cowrie.session.file_upload':
             self.simpleQuery('INSERT INTO `downloads`' + \

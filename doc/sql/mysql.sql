@@ -57,11 +57,16 @@ CREATE TABLE IF NOT EXISTS `sessions` (
   `country_name` varchar(45) default '',
   `country_iso_code` varchar(2) default '',
   `city_name` varchar(128) default '',
+  `org` varchar(128) default '',
   `latitude` float,
   `longitude` float,
   `geohash` varchar(30),
   PRIMARY KEY (`id`),
-  KEY `starttime` (`starttime`,`sensor`)
+  KEY `starttime` (`starttime`,`sensor`),
+  KEY (`ip`),
+  KEY (`starttime`),
+  KEY (`country_name`),
+  KEY (`org`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `ttylog` (
@@ -77,7 +82,7 @@ CREATE TABLE IF NOT EXISTS `downloads` (
   `session` CHAR( 32 ) NOT NULL,
   `timestamp` datetime NOT NULL,
   `url` text NOT NULL,
-  `outfile` text NOT NULL,
+  `outfile` text default NULL,
   `shasum` varchar(64) default NULL,
   PRIMARY KEY (`id`),
   KEY `session` (`session`,`timestamp`),
@@ -92,3 +97,12 @@ CREATE TABLE IF NOT EXISTS `keyfingerprints` (
   UNIQUE (`fingerprint`),
   PRIMARY KEY (`id`)
 ) ;
+
+CREATE TABLE IF NOT EXISTS `params` (
+  `id` int(11) NOT NULL auto_increment,
+  `session` CHAR( 32 ) NOT NULL,
+  `arch` varchar(32) NOT NULL,
+  PRIMARY KEY  (`id`),
+  KEY `arch_index` (`arch`)
+) ;
+

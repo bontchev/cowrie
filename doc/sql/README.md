@@ -10,17 +10,21 @@
 ## Installation
 
 ```
-$ sudo apt-get install python-mysqldb libmysqlclient-dev
+$ sudo add-apt-repository ppa:maxmind/ppa
+$ sudo apt-get update
+$ sudo apt-get install python-mysqldb libmysqlclient-dev geoipupdate
 $ sudo su - cowrie
 $ cd cowrie
 $ source ./cowrie-env/bin/activate
 $ easy_install hashlib
 $ pip install MySQL-python
 $ deactivate
-$ cd data
-$ wget http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz
-$ gzip -df GeoLite2-City.mmdb.gz
-$ cd ..
+```
+
+Inspect the file `~/cowrie/data/GeoIP.conf` and check that the configuration options `DatabaseDirectory` and `LockFile` point to correct (existing) paths. Then download the latest version of the Maxmind geolocation databases:
+
+```
+$ geoipupdate -f ~/cowrie/data/GeoIP.conf
 ```
 
 To have the database updated automatically (it is updated every second Tuesday
@@ -29,7 +33,7 @@ of each month, so download it every second Wednesday), create a crontab job
 
 ```
 # Update the geoIP database at midnight on the 2nd Wednesday of each month:
-0 0 * * 3 [ `/bin/date +\%d` -le 7 ] && cd /home/cowrie/cowrie/data && /usr/bin/wget -q http://geolite.maxmind.com/       download/geoip/database/GeoLite2-City.mmdb.gz && /bin/gzip -df GeoLite2-City.mmdb.gz
+0 0 8-14 * * [ $(/bin/date +\%u) -eq 3 ] && /usr/bin/geoipupdate -f /home/cowrie/cowrie/data/GeoIP.conf
 ```
 
 ## MySQL Configuration
@@ -66,6 +70,8 @@ port = 3306
 store_input = true
 debug = false
 ```
+
+Please note that leaving `store_input` set to `true` stores an extensive amount of information (basically, every command executed by every attacker) into one of the MySQL tables (the one named `input`). A year's worth of data can easily cause this table to become hundreds of millions of rows and dozens of gigabytes large and to chocke down your server. Unless you _really_ need to collect this information, it is advisable to set `store_input` to `false`. It is set to `true` by default for compatibility with previous versions of Cowrie, which did not have such a setting and always collected the data.
 
 
 ## Restart Cowrie
