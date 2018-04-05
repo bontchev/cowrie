@@ -16,7 +16,7 @@ config_get() {
 }
 
 AUTHBIND_ENABLED="$(config_get AUTHBIND_ENABLED)";
-VIRTUALENV_ENABLED="$(config_get VIRTUALENV_ENABLED)";
+COWRIE_VIRTUAL_ENV="$(config_get COWRIE_VIRTUAL_ENV)";
 DAEMONIZE="$(config_get DAEMONIZE)";
 UMASK="$(config_get UMASK)";
 
