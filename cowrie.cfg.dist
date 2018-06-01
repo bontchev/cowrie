@@ -43,7 +43,7 @@ download_path = dl
 
 # Directory for miscellaneous data files, such as the password database.
 #
-# (default: data_path)
+# (default: data)
 data_path = data
 
 
@@ -110,82 +110,6 @@ interactive_timeout = 180
 backend = shell
 
 
-[shell]
-# Fake architectures/OS
-# When Cowrie receive a command like /bin/cat XXXX (where XXXX is an executable)
-# it replies with the content of a dummy executable (located in data_path/arch)
-# compiled for an architecture/OS/endian_mode
-# arch can be a comma separated list. When there are multiple elements, a random
-# is chosen at login time.
-# (default: linux-x64-lsb)
-
-arch = linux-x64-lsb
-
-# Here the list of supported OS-ARCH-ENDIANESS executables
-# bsd-aarch64-lsb:	    64-bit	LSB	ARM aarch64 version 1 (SYSV)			
-# bsd-aarch64-msb:	    64-bit	MSB	ARM aarch64 version 1 (SYSV)			
-# bsd-bfin-msb:		    32-bit	MSB	Analog Devices Blackfin	version	1 (SYSV)		
-# bsd-mips64-lsb:		64-bit	LSB	MIPS MIPS-III version 1	(SYSV)			
-# bsd-mips64-msb:		64-bit	MSB	MIPS MIPS-III version 1	(SYSV)			
-# bsd-mips-lsb:		    32-bit	LSB	MIPS MIPS-I version 1 (FreeBSD)			
-# bsd-mips-msb:		    32-bit	MSB	MIPS MIPS-I version 1 (FreeBSD)			
-# bsd-powepc64-lsb:	    64-bit	MSB	64-bit PowerPC or cisco	7500 version 1 (FreeBSD)
-# bsd-powepc-msb:		32-bit	MSB	PowerPC	or cisco 4500 version 1	(FreeBSD)	
-# bsd-riscv64-lsb:	    64-bit	LSB	UCB RISC-V version 1 (SYSV)			
-# bsd-sparc64-msb:	    64-bit	MSB	SPARC V9 relaxed memory	ordering version 1 (FreeBSD)
-# bsd-sparc-msb:		32-bit	MSB	SPARC version 1	(SYSV) statically			
-# bsd-x32-lsb:		    32-bit	LSB	Intel 80386 version 1 (FreeBSD)			
-# bsd-x64-lsb:		    64-bit	LSB	x86-64 version 1 (FreeBSD)		
-# linux-aarch64-lsb:	64-bit	LSB	ARM aarch64 version 1 (SYSV)			
-# linux-aarch64-msb:	64-bit	MSB	ARM aarch64 version 1 (SYSV)			
-# linux-alpha-lsb:	    64-bit	LSB	Alpha (unofficial) version 1 (SYSV)			
-# linux-am33-lsb:		32-bit	LSB	Matsushita MN10300 version 1 (SYSV)			
-# linux-arc-lsb:		32-bit	LSB	ARC Cores Tangent-A5 version 1 (SYSV)		
-# linux-arc-msb:		32-bit	MSB	ARC Cores Tangent-A5 version 1 (SYSV)		
-# linux-arm-lsb:		32-bit	LSB	ARM EABI5 version 1 (SYSV)			
-# linux-arm-msb:		32-bit	MSB	ARM EABI5 version 1 (SYSV)			
-# linux-avr32-lsb:	    32-bit	LSB	Atmel AVR 8-bit	version 1 (SYSV)		
-# linux-bfin-lsb:		32-bit	LSB	Analog Devices Blackfin version	1 (SYSV)		
-# linux-c6x-lsb:		32-bit	LSB	TI TMS320C6000 DSP family version 1		
-# linux-c6x-msb:		32-bit	MSB	TI TMS320C6000 DSP family version 1		
-# linux-cris-lsb:		32-bit	LSB	Axis cris version 1 (SYSV)
-# linux-frv-msb:		32-bit	MSB	Cygnus FRV (unofficial) version	1 (SYSV)		
-# linux-h8300-msb:	    32-bit	MSB	Renesas	H8/300 version 1 (SYSV)			
-# linux-hppa64-msb:	    64-bit	MSB	PA-RISC	02.00.00 (LP64) version	1			
-# linux-hppa-msb:		32-bit	MSB	PA-RISC	*unknown arch 0xf* version 1 (GNU/Linux)	
-# linux-ia64-lsb:		64-bit	LSB	IA-64 version 1	(SYSV)		
-# linux-m32r-msb:		32-bit	MSB	Renesas	M32R version 1 (SYSV)			
-# linux-m68k-msb:		32-bit	MSB	Motorola m68k 68020 version 1 (SYSV)		
-# linux-microblaze-msb:	32-bit	MSB	Xilinx MicroBlaze 32-bit RISC version 1	(SYSV)	
-# linux-mips64-lsb:	    64-bit	LSB	MIPS MIPS-III version 1	(SYSV)	
-# linux-mips64-msb:	    64-bit	MSB	MIPS MIPS-III version 1	(SYSV)
-# linux-mips-lsb:		32-bit	LSB	MIPS MIPS-I version 1 (SYSV)
-# linux-mips-msb:		32-bit	MSB	MIPS MIPS-I version 1 (SYSV)			
-# linux-mn10300-lsb:	32-bit	LSB	Matsushita MN10300 version 1 (SYSV)			
-# linux-nios-lsb:		32-bit	LSB	Altera Nios II version 1 (SYSV)		
-# linux-nios-msb:		32-bit	MSB	Altera Nios II version 1 (SYSV)		
-# linux-powerpc64-lsb:	64-bit	LSB	64-bit PowerPC or cisco	7500 version 1 (SYSV)
-# linux-powerpc64-msb:	64-bit	MSB	64-bit PowerPC or cisco	7500 version 1 (SYSV)
-# linux-powerpc-lsb:	32-bit	LSB	PowerPC	or cisco 4500 version 1 (SYSV)	
-# linux-powerpc-msb:	32-bit	MSB	PowerPC	or cisco 4500 version 1 (SYSV)	
-# linux-riscv64-lsb:  	64-bit	LSB	UCB RISC-V version 1 (SYSV)			
-# linux-s390x-msb:    	64-bit	MSB	IBM S/390 version 1 (SYSV)			
-# linux-sh-lsb:	    	32-bit	LSB	Renesas	SH version 1 (SYSV)			
-# linux-sh-msb:	    	32-bit	MSB	Renesas	SH version 1 (SYSV)			
-# linux-sparc64-msb:  	64-bit	MSB	SPARC V9 relaxed memory	ordering version 1 (SYSV)
-# linux-sparc-msb:    	32-bit	MSB	SPARC version 1	(SYSV)
-# linux-tilegx64-lsb:	64-bit	LSB	Tilera TILE-Gx version 1 (SYSV)			
-# linux-tilegx64-msb: 	64-bit	MSB	Tilera TILE-Gx version 1 (SYSV)			
-# linux-tilegx-lsb:   	32-bit	LSB	Tilera TILE-Gx version 1 (SYSV)			
-# linux-tilegx-msb:   	32-bit	MSB	Tilera TILE-Gx version 1 (SYSV)			
-# linux-x64-lsb:	    64-bit	LSB	x86-64 version 1 (SYSV)			
-# linux-x86-lsb:	    32-bit	LSB	Intel 80386 version 1 (SYSV)			
-# linux-xtensa-msb:   	32-bit	MSB	Tensilica Xtensa version 1 (SYSV)			
-# osx-x32-lsb:	    	32-bit	LSB Intel 80386
-# osx-x64-lsb:	    	64-bit	LSB	x86-64
-
-# NO SPACE BETWEEN ELEMENTS!
-# arch = bsd-aarch64-lsb,bsd-aarch64-msb,bsd-bfin-msb,bsd-mips-lsb,bsd-mips-msb,bsd-mips64-lsb,bsd-mips64-msb,bsd-powepc-msb,bsd-powepc64-lsb,bsd-riscv64-lsb,bsd-sparc-msb,bsd-sparc64-msb,bsd-x32-lsb,bsd-x64-lsb,linux-aarch64-lsb,linux-aarch64-msb,linux-alpha-lsb,linux-am33-lsb,linux-arc-lsb,linux-arc-msb,linux-arm-lsb,linux-arm-msb,linux-avr32-lsb,linux-bfin-lsb,linux-c6x-lsb,linux-c6x-msb,linux-cris-lsb,linux-frv-msb,linux-h8300-msb,linux-hppa-msb,linux-hppa64-msb,linux-ia64-lsb,linux-m32r-msb,linux-m68k-msb,linux-microblaze-msb,linux-mips-lsb,linux-mips-msb,linux-mips64-lsb,linux-mips64-msb,linux-mn10300-lsb,linux-nios-lsb,linux-nios-msb,linux-powerpc-lsb,linux-powerpc-msb,linux-powerpc64-lsb,linux-powerpc64-msb,linux-riscv64-lsb,linux-s390x-msb,linux-sh-lsb,linux-sh-msb,linux-sparc-msb,linux-sparc64-msb,linux-tilegx-lsb,linux-tilegx-msb,linux-tilegx64-lsb,linux-tilegx64-msb,linux-x64-lsb,linux-x86-lsb,linux-xtensa-msb,osx-x32-lsb,osx-x64-lsb
 
 # ============================================================================
 # Network Specific Options
@@ -256,7 +180,6 @@ auth_class = UserDB
 #auth_none_enabled = false
 
 
-
 # ============================================================================
 # Historical SSH Specific Options
 # historical options in [honeypot] that have not yet been moved to [ssh]
@@ -264,6 +187,91 @@ auth_class = UserDB
 
 # Source Port to report in logs (useful if you use iptables to forward ports to Cowrie)
 #reported_ssh_port = 22
+
+
+
+# ============================================================================
+# Shell Options
+# Options around Cowrie's Shell Emulation
+# ============================================================================
+
+[shell]
+
+# Fake architectures/OS
+# When Cowrie receive a command like /bin/cat XXXX (where XXXX is an executable)
+# it replies with the content of a dummy executable (located in data_path/arch)
+# compiled for an architecture/OS/endian_mode
+# arch can be a comma separated list. When there are multiple elements, a random
+# is chosen at login time.
+# (default: linux-x64-lsb)
+
+arch = linux-x64-lsb
+
+# Here the list of supported OS-ARCH-ENDIANESS executables
+# bsd-aarch64-lsb:	    64-bit	LSB	ARM aarch64 version 1 (SYSV)
+# bsd-aarch64-msb:	    64-bit	MSB	ARM aarch64 version 1 (SYSV)
+# bsd-bfin-msb:		    32-bit	MSB	Analog Devices Blackfin	version	1 (SYSV)
+# bsd-mips64-lsb:		64-bit	LSB	MIPS MIPS-III version 1	(SYSV)
+# bsd-mips64-msb:		64-bit	MSB	MIPS MIPS-III version 1	(SYSV)
+# bsd-mips-lsb:		    32-bit	LSB	MIPS MIPS-I version 1 (FreeBSD)
+# bsd-mips-msb:		    32-bit	MSB	MIPS MIPS-I version 1 (FreeBSD)
+# bsd-powepc64-lsb:	    64-bit	MSB	64-bit PowerPC or cisco	7500 version 1 (FreeBSD)
+# bsd-powepc-msb:		32-bit	MSB	PowerPC	or cisco 4500 version 1	(FreeBSD)
+# bsd-riscv64-lsb:	    64-bit	LSB	UCB RISC-V version 1 (SYSV)
+# bsd-sparc64-msb:	    64-bit	MSB	SPARC V9 relaxed memory	ordering version 1 (FreeBSD)
+# bsd-sparc-msb:		32-bit	MSB	SPARC version 1	(SYSV) statically
+# bsd-x32-lsb:		    32-bit	LSB	Intel 80386 version 1 (FreeBSD)
+# bsd-x64-lsb:		    64-bit	LSB	x86-64 version 1 (FreeBSD)
+# linux-aarch64-lsb:	64-bit	LSB	ARM aarch64 version 1 (SYSV)
+# linux-aarch64-msb:	64-bit	MSB	ARM aarch64 version 1 (SYSV)
+# linux-alpha-lsb:	    64-bit	LSB	Alpha (unofficial) version 1 (SYSV)
+# linux-am33-lsb:		32-bit	LSB	Matsushita MN10300 version 1 (SYSV)
+# linux-arc-lsb:		32-bit	LSB	ARC Cores Tangent-A5 version 1 (SYSV)
+# linux-arc-msb:		32-bit	MSB	ARC Cores Tangent-A5 version 1 (SYSV)
+# linux-arm-lsb:		32-bit	LSB	ARM EABI5 version 1 (SYSV)
+# linux-arm-msb:		32-bit	MSB	ARM EABI5 version 1 (SYSV)
+# linux-avr32-lsb:	    32-bit	LSB	Atmel AVR 8-bit	version 1 (SYSV)
+# linux-bfin-lsb:		32-bit	LSB	Analog Devices Blackfin version	1 (SYSV)
+# linux-c6x-lsb:		32-bit	LSB	TI TMS320C6000 DSP family version 1
+# linux-c6x-msb:		32-bit	MSB	TI TMS320C6000 DSP family version 1
+# linux-cris-lsb:		32-bit	LSB	Axis cris version 1 (SYSV)
+# linux-frv-msb:		32-bit	MSB	Cygnus FRV (unofficial) version	1 (SYSV)
+# linux-h8300-msb:	    32-bit	MSB	Renesas	H8/300 version 1 (SYSV)
+# linux-hppa64-msb:	    64-bit	MSB	PA-RISC	02.00.00 (LP64) version	1
+# linux-hppa-msb:		32-bit	MSB	PA-RISC	*unknown arch 0xf* version 1 (GNU/Linux)
+# linux-ia64-lsb:		64-bit	LSB	IA-64 version 1	(SYSV)
+# linux-m32r-msb:		32-bit	MSB	Renesas	M32R version 1 (SYSV)
+# linux-m68k-msb:		32-bit	MSB	Motorola m68k 68020 version 1 (SYSV)
+# linux-microblaze-msb:	32-bit	MSB	Xilinx MicroBlaze 32-bit RISC version 1	(SYSV)
+# linux-mips64-lsb:	    64-bit	LSB	MIPS MIPS-III version 1	(SYSV)
+# linux-mips64-msb:	    64-bit	MSB	MIPS MIPS-III version 1	(SYSV)
+# linux-mips-lsb:		32-bit	LSB	MIPS MIPS-I version 1 (SYSV)
+# linux-mips-msb:		32-bit	MSB	MIPS MIPS-I version 1 (SYSV)
+# linux-mn10300-lsb:	32-bit	LSB	Matsushita MN10300 version 1 (SYSV)
+# linux-nios-lsb:		32-bit	LSB	Altera Nios II version 1 (SYSV)
+# linux-nios-msb:		32-bit	MSB	Altera Nios II version 1 (SYSV)
+# linux-powerpc64-lsb:	64-bit	LSB	64-bit PowerPC or cisco	7500 version 1 (SYSV)
+# linux-powerpc64-msb:	64-bit	MSB	64-bit PowerPC or cisco	7500 version 1 (SYSV)
+# linux-powerpc-lsb:	32-bit	LSB	PowerPC	or cisco 4500 version 1 (SYSV)
+# linux-powerpc-msb:	32-bit	MSB	PowerPC	or cisco 4500 version 1 (SYSV)
+# linux-riscv64-lsb:  	64-bit	LSB	UCB RISC-V version 1 (SYSV)
+# linux-s390x-msb:    	64-bit	MSB	IBM S/390 version 1 (SYSV)
+# linux-sh-lsb:	    	32-bit	LSB	Renesas	SH version 1 (SYSV)
+# linux-sh-msb:	    	32-bit	MSB	Renesas	SH version 1 (SYSV)
+# linux-sparc64-msb:  	64-bit	MSB	SPARC V9 relaxed memory	ordering version 1 (SYSV)
+# linux-sparc-msb:    	32-bit	MSB	SPARC version 1	(SYSV)
+# linux-tilegx64-lsb:	64-bit	LSB	Tilera TILE-Gx version 1 (SYSV)
+# linux-tilegx64-msb: 	64-bit	MSB	Tilera TILE-Gx version 1 (SYSV)
+# linux-tilegx-lsb:   	32-bit	LSB	Tilera TILE-Gx version 1 (SYSV)
+# linux-tilegx-msb:   	32-bit	MSB	Tilera TILE-Gx version 1 (SYSV)
+# linux-x64-lsb:	    64-bit	LSB	x86-64 version 1 (SYSV)
+# linux-x86-lsb:	    32-bit	LSB	Intel 80386 version 1 (SYSV)
+# linux-xtensa-msb:   	32-bit	MSB	Tensilica Xtensa version 1 (SYSV)
+# osx-x32-lsb:	    	32-bit	LSB Intel 80386
+# osx-x64-lsb:	    	64-bit	LSB	x86-64
+
+# NO SPACE BETWEEN ELEMENTS!
+# arch = bsd-aarch64-lsb,bsd-aarch64-msb,bsd-bfin-msb,bsd-mips-lsb,bsd-mips-msb,bsd-mips64-lsb,bsd-mips64-msb,bsd-powepc-msb,bsd-powepc64-lsb,bsd-riscv64-lsb,bsd-sparc-msb,bsd-sparc64-msb,bsd-x32-lsb,bsd-x64-lsb,linux-aarch64-lsb,linux-aarch64-msb,linux-alpha-lsb,linux-am33-lsb,linux-arc-lsb,linux-arc-msb,linux-arm-lsb,linux-arm-msb,linux-avr32-lsb,linux-bfin-lsb,linux-c6x-lsb,linux-c6x-msb,linux-cris-lsb,linux-frv-msb,linux-h8300-msb,linux-hppa-msb,linux-hppa64-msb,linux-ia64-lsb,linux-m32r-msb,linux-m68k-msb,linux-microblaze-msb,linux-mips-lsb,linux-mips-msb,linux-mips64-lsb,linux-mips64-msb,linux-mn10300-lsb,linux-nios-lsb,linux-nios-msb,linux-powerpc-lsb,linux-powerpc-msb,linux-powerpc64-lsb,linux-powerpc64-msb,linux-riscv64-lsb,linux-s390x-msb,linux-sh-lsb,linux-sh-msb,linux-sparc-msb,linux-sparc64-msb,linux-tilegx-lsb,linux-tilegx-msb,linux-tilegx64-lsb,linux-tilegx64-msb,linux-x64-lsb,linux-x86-lsb,linux-xtensa-msb,osx-x32-lsb,osx-x64-lsb
 
 
 
@@ -442,17 +450,27 @@ listen_endpoints = tcp:2223:interface=0.0.0.0
 
 
 
+
 # ============================================================================
 # Output Plugins
 # These provide an extensible mechanism to send audit log entries to third
 # parties. The audit entries contain information on clients connecting to
 # the honeypot.
+#
+# Output entries need to start with 'output_' and have the 'enabled' entry.
 # ============================================================================
 
+#[output_xmpp]
+#enabled=true
+#server = conference.cowrie.local
+#user = cowrie@cowrie.local
+#password = cowrie
+#muc = hacker_room
 
 # JSON based logging module
 #
 [output_jsonlog]
+enabled = true
 logfile = log/cowrie.json
 
 
@@ -460,6 +478,7 @@ logfile = log/cowrie.json
 # This is a simple early release
 #
 #[output_elasticsearch]
+#enabled = false
 #host = localhost
 #port = 9200
 #index = cowrie
@@ -475,6 +494,7 @@ logfile = log/cowrie.json
 #userid = userid_here
 #auth_key = auth_key_here
 #batch_size = 100
+#enabled = false
 
 
 # Local Syslog output module
@@ -487,6 +507,7 @@ logfile = log/cowrie.json
 # text, cef
 #
 #[output_localsyslog]
+#enabled = false
 #facility = USER
 #format = text
 
@@ -498,6 +519,7 @@ logfile = log/cowrie.json
 # text, cef
 #
 #[output_textlog]
+#enabled = false
 #logfile = log/audit.log
 #format = text
 
@@ -509,6 +531,7 @@ logfile = log/cowrie.json
 # MySQL logging requires an extra Python module: pip install mysql-python
 #
 #[output_mysql]
+#enabled = false
 #host = localhost
 #database = cowrie
 #username = cowrie
@@ -521,6 +544,7 @@ logfile = log/cowrie.json
 # Rethinkdb output module requires extra Python module: pip install rethinkdb
 
 #[output_rethinkdblog]
+#enabled = false
 #host = 127.0.0.1
 #port = 28015
 #table = output
@@ -534,6 +558,7 @@ logfile = log/cowrie.json
 #     sqlite3 <db_file> < doc/sql/sqlite3.sql
 #
 #[output_sqlite]
+#enabled = false
 #db_file = cowrie.db
 
 # MongoDB logging module
@@ -541,6 +566,7 @@ logfile = log/cowrie.json
 # MongoDB logging requires an extra Python module: pip install pymongo
 #
 #[output_mongodb]
+#enabled = false
 #connection_string = mongodb://username:password@host:port/database
 #database = dbname
 
@@ -549,6 +575,7 @@ logfile = log/cowrie.json
 # This sends logs directly to Splunk using the Python REST SDK
 #
 #[output_splunklegacy]
+#enabled = false
 #host = localhost
 #port = 8889
 #username = admin
@@ -562,6 +589,7 @@ logfile = log/cowrie.json
 # optional fields: index, source, sourcetype, host
 #
 #[output_splunk]
+#enabled = false
 #url = https://localhost:8088/services/collector/event
 #token = 6A0EA6C6-8006-4E39-FC44-C35FF6E561A8
 #index = cowrie
@@ -572,6 +600,7 @@ logfile = log/cowrie.json
 # HPFeeds
 #
 #[output_hpfeeds]
+#enabled = false
 #server = hpfeeds.mysite.org
 #port = 10000
 #identifier = abc123
@@ -583,6 +612,7 @@ logfile = log/cowrie.json
 # You must signup for an api key.
 #
 #[output_virustotal]
+#enabled = false
 #api_key = 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 #upload = True
 #debug = False
@@ -590,6 +620,7 @@ logfile = log/cowrie.json
 
 # Cuckoo output module
 #[output_cuckoo]
+#enabled = false
 # no slash at the end
 #url_base = http://127.0.0.1:8090
 #user = user
@@ -601,24 +632,27 @@ logfile = log/cowrie.json
 #[output_malshare]
 #enabled = false
 
-#[output_slack]
 # This will produce a _lot_ of messages - you have been warned....
+#[output_slack]
+#enabled = false
 #channel = channel_that_events_should_be_posted_in
 #token = slack_token_for_your_bot
-##debug=true
+#debug = false
 
 
 # https://csirtg.io
 # You must signup for an api key.
 #
 #[output_csirtg]
-#username=wes
-#feed=scanners
-#description=random scanning activity
-#token=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+#enabled = false
+#username = wes
+#feed = scanners
+#description = random scanning activity
+#token = 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 
 #[output_socketlog]
+#enabled = false
 #address = 127.0.0.1:9000
 #timeout = 5
 
@@ -649,6 +683,7 @@ logfile = log/cowrie.json
 #verify = no
 
 #[output_influx]
+#enabled = false
 #host = 127.0.0.1
 #port = 8086
 #database_name = cowrie
@@ -656,21 +691,15 @@ logfile = log/cowrie.json
 
 
 #[output_redis]
-# Host of the redis server. Required
+#enabled = false
 #host = 127.0.0.1
-
-# Port of the redis server. Required
 #port = 6379
-
 # DB of the redis server. Defaults to 0
 #db = 0
-
 # Password of the redis server. Defaults to None
 #password = secret
-
 # Name of the list to push to or the channel to publish to. Required
 #keyname = cowrie
-
 # Method to use when sending data to redis.
 # Can be one of [lpush, rpush, publish]. Defaults to lpush
 #send_method = lpush

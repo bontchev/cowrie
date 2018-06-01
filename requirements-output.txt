@@ -36,3 +36,8 @@ splunk-sdk
 
 # influxdb
 influxdb
+
+# dblog_xmpp
+wokkel==18.0.0rc3
+
+

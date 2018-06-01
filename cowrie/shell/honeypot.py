@@ -28,6 +28,7 @@ else:
     from cowrie.shell import shlex
 
 
+
 class HoneyPotCommand(object):
     """
     """
@@ -101,7 +102,7 @@ class HoneyPotCommand(object):
         """
         """
         with open(self.safeoutfile, 'ab') as f:
-            f.write(data)
+            f.write(data.encode())
         self.writtenBytes += len(data)
         self.fs.update_size(self.outfile, self.writtenBytes)
 
@@ -110,6 +111,7 @@ class HoneyPotCommand(object):
         """
         """
         pass
+
 
     def start(self):
         """
@@ -135,14 +137,17 @@ class HoneyPotCommand(object):
             else:
                 self.protocol.terminal.redirFiles.add((self.safeoutfile, ''))
 
-        if self.protocol.cmdstack:
+        if len(self.protocol.cmdstack):
             self.protocol.cmdstack.pop()
             if len(self.protocol.cmdstack):
                 self.protocol.cmdstack[-1].resume()
         else:
             ret = failure.Failure(error.ProcessDone(status=""))
-            self.protocol.terminal.transport.processEnded(ret)
-
+            # The session could be disconnected already, when his happens .transport is gone
+            try:
+                self.protocol.terminal.transport.processEnded(ret)
+            except exceptions.AttributeError:
+                pass
 
 
     def handle_CTRL_C(self):
@@ -356,7 +361,7 @@ class HoneyPotShell(object):
         lastpp = None
         for index, cmd in reversed(list(enumerate(cmd_array))):
 
-            cmdclass = self.protocol.getCommand(cmd['command'], environ['PATH'] .split(':'))
+            cmdclass = self.protocol.getCommand(cmd['command'], environ['PATH'].split(':'))
             if cmdclass:
                 log.msg(input=cmd['command'] + " " + ' '.join(cmd['rargs']), format='Command found: %(input)s')
                 if index == len(cmd_array)-1:
@@ -518,6 +523,7 @@ class HoneyPotShell(object):
 class StdOutStdErrEmulationProtocol(object):
     """
     Pipe support written by Dave Germiquet
+    Support for commands chaining added by Ivan Korolev (@fe7ch)
     """
     __author__ = 'davegermiquet'
 
@@ -539,6 +545,9 @@ class StdOutStdErrEmulationProtocol(object):
 
     def outReceived(self, data):
         """
+        Invoked when a command in the chain called 'write' method
+        If we have a next command, pass the data via input_data field
+        Else print data to the terminal
         """
         self.data = data
 
@@ -552,6 +561,7 @@ class StdOutStdErrEmulationProtocol(object):
             npcmd = self.next_command.cmd
             npcmdargs = self.next_command.cmdargs
             self.protocol.call_command(self.next_command, npcmd, *npcmdargs)
+
 
     def insert_command(self, command):
         """
@@ -577,7 +587,9 @@ class StdOutStdErrEmulationProtocol(object):
 
     def outConnectionLost(self):
         """
+        Called from HoneyPotBaseProtocol.call_command() to run a next command in the chain
         """
+
         if self.next_command:
             self.next_command.input_data = self.data
             npcmd = self.next_command.cmd

@@ -1,8 +1,9 @@
 #Change the below to yes if you are using authbind to listen to port 22
 AUTHBIND_ENABLED=no
 
-#Change the below to yes to activate the "cowrie-env" virtual environment
-VIRTUALENV_ENABLED=yes
+# To override the default virtual enviroment, either set COWRIE_VIRTUAL_ENV or
+# activate it before starting Cowrie
+COWRIE_VIRTUAL_ENV=cowrie-env
 
 #Change the below to -n to disable daemonizing (for instance when using supervisor)
 DAEMONIZE=

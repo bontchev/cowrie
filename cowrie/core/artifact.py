@@ -43,6 +43,7 @@ class Artifact:
 
         self.fp = tempfile.NamedTemporaryFile(dir=self.artifactDir, delete=False)
         self.tempFilename = self.fp.name
+        self.closed = False
 
         self.shasum = ''
         self.shasumFilename = ''
@@ -71,13 +72,14 @@ class Artifact:
         return self.fp.fileno()
 
 
-    def close(self, keepEmpty=True):
+    def close(self, keepEmpty=False):
         """
         """
         size = self.fp.tell()
         self.fp.seek(0)
         data = self.fp.read()
         self.fp.close()
+        self.closed = True
         self.shasum = hashlib.sha256(data).hexdigest()
         self.shasumFilename = os.path.join(self.artifactDir, self.shasum)
 

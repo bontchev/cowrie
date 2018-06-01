@@ -4,7 +4,6 @@ bin/cowrie-launch.cfg
 data/.geoipupdate.lock
 data/GeoLite2-City.mmdb
 data/GeoLite2-ASN.mmdb
-data/GeoIP.conf
 data/uservar.json
 etc/ssh_host_dsa_key
 etc/ssh_host_dsa_key.pub
@@ -25,3 +24,4 @@ twisted/plugins/dropin.cache
 _trial_temp
 .project
 .pydevproject
+.idea/
