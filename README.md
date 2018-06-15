@@ -12,13 +12,17 @@ attacker.
 
 [Cowrie](http://github.com/micheloosterhof/cowrie/) is developed by Michel Oosterhof.
 
+## Slack
+
+You can join the Cowrie community at the following [Slack workspace](https://cowrie.slack.com/join/shared_invite/enQtMzc3NjY3OTYwMjI0LThiY2ViMjkyNDgzOTE2ZjI3NTI0N2QxZmI2Yzg2ZmFkYmFlYTg1NTU4OWZjOWM0MjBlNjQ2MjA1NmUyOWVlNDA)
+
 ## Features
 
 Some interesting features:
 
 * Fake filesystem with the ability to add/remove files. A full fake filesystem resembling a Debian 5.0 installation is included
 * Possibility of adding fake file contents so the attacker can `cat` files such as `/etc/passwd`. Only minimal file contents are included
-* Session logs stored in an [UML Compatible](http://user-mode-linux.sourceforge.net/)  format for easy replay with original timings
+* Session logs are stored in an [UML Compatible](http://user-mode-linux.sourceforge.net/)  format for easy replay with original timings with the `bin/playlog` utility.
 * Cowrie saves files downloaded with wget/curl or uploaded with SFTP and scp for later inspection
 
 Additional functionality over standard kippo:
@@ -65,7 +69,7 @@ Maybe. See [FAQ](https://github.com/micheloosterhof/cowrie/wiki/Frequently-Asked
 
 ## I have some questions!
 
-Please visit https://github.com/micheloosterhof/cowrie/issues
+Please visit https://cowrie.slack.com/ and join the #questions channel
 
 ## I'd like to install with Docker
 
