@@ -13,6 +13,7 @@ import re
 import time
 import struct
 import uuid
+from hashlib import md5
 import zlib
 
 from twisted.conch.ssh import transport
@@ -28,7 +29,6 @@ class HoneyPotSSHTransport(transport.SSHServerTransport, TimeoutMixin):
     """
     logintime = None
     gotVersion = False
-    transportId = uuid.uuid4().hex[:12]
 
     def __repr__(self):
         """
@@ -45,6 +45,7 @@ class HoneyPotSSHTransport(transport.SSHServerTransport, TimeoutMixin):
         Called when the connection is made from the other side.
         We send our version, but wait with sending KEXINIT
         """
+        self.transportId = uuid.uuid4().hex[:12]
         src_ip = self.transport.getPeer().host
         ipv4rex = re.compile(r'^::ffff:(\d+\.\d+\.\d+\.\d+)$')
         ipv4_search = ipv4rex.search(src_ip)
@@ -98,7 +99,7 @@ class HoneyPotSSHTransport(transport.SSHServerTransport, TimeoutMixin):
                 self.sendKexInit()
             else:
                 self.transport.write(b'Protocol mismatch.\n')
-                log.msg("Bad protocol version identification: {}".format(self.otherVersionString))
+                log.msg("Bad protocol version identification: {}".format(repr(self.otherVersionString)))
                 self.transport.loseConnection()
                 return
         packet = self.getPacket()
@@ -150,6 +151,11 @@ class HoneyPotSSHTransport(transport.SSHServerTransport, TimeoutMixin):
         strings, _ = k[:-1], k[-1]
         (kexAlgs, keyAlgs, encCS, _, macCS, _, compCS, _, langCS,
             _) = [s.split(b',') for s in strings]
+
+        client_fingerprint = md5(packet[16:]).hexdigest()
+        log.msg(eventid='cowrie.client.fingerprint',
+                format="Remote SSH client fingerprint: %(client_fingerprint)s",
+                client_fingerprint=client_fingerprint)
         log.msg(eventid='cowrie.client.version', version=self.otherVersionString,
             kexAlgs=kexAlgs, keyAlgs=keyAlgs, encCS=encCS, macCS=macCS,
             compCS=compCS, langCS=langCS, format="Remote SSH version: %(version)s")

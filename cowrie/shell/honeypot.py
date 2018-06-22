@@ -215,7 +215,7 @@ class HoneyPotShell(object):
         while True:
             try:
                 tok = self.lexer.get_token()
-                # log.msg( "tok: %s" % (repr(tok)) )
+                # log.msg("tok: %s" % (repr(tok)))
 
                 # Ignore parentheses
                 tok_len = len(tok)
@@ -263,7 +263,7 @@ class HoneyPotShell(object):
                 self.protocol.terminal.write(
                     'bash: syntax error: unexpected end of file\n')
                 # Could run runCommand here, but i'll just clear the list instead
-                log.msg( "exception: {}".format(e) )
+                log.msg("exception: {}".format(e))
                 self.cmdpending = []
                 self.showPrompt()
                 return
@@ -321,7 +321,7 @@ class HoneyPotShell(object):
 
         # Probably no reason to be this comprehensive for just PATH...
         environ = copy.copy(self.environ)
-        cmd_array = [ ]
+        cmd_array = []
         cmd = {}
         while len(cmdAndArgs):
             piece = cmdAndArgs.pop(0)

@@ -21,6 +21,7 @@ from twisted.protocols.policies import TimeoutMixin
 from cowrie.core.credentials import UsernamePasswordIP
 from cowrie.core.config import CONFIG
 
+
 class HoneyPotTelnetFactory(protocol.ServerFactory):
     """
     This factory creates HoneyPotTelnetAuthProtocol instances
@@ -219,18 +220,17 @@ class HoneyPotTelnetAuthProtocol(AuthenticatingTelnetProtocol):
 class CowrieTelnetTransport(TelnetTransport, TimeoutMixin):
     """
     """
-    transportId = uuid.uuid4().hex[:12]
-    startTime = None
 
     def connectionMade(self):
         """
         """
+        self.transportId = uuid.uuid4().hex[:12]
         sessionno = self.transport.sessionno
         self.startTime = time.time()
         self.setTimeout(300)
 
         log.msg(eventid='cowrie.session.connect',
-           format='New connection: %(src_ip)s:%(src_port)s (%(dst_ip)s:%(dst_port)s) [session: T%(sessionno)s]',
+           format='New connection: %(src_ip)s:%(src_port)s (%(dst_ip)s:%(dst_port)s) [session: %(session)s]',
            src_ip=self.transport.getPeer().host, src_port=self.transport.getPeer().port,
            dst_ip=self.transport.getHost().host, dst_port=self.transport.getHost().port,
            session=self.transportId, sessionno='T'+str(sessionno), protocol='telnet')
