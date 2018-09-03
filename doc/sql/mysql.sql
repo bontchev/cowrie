@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS `auth` (
   `password` varchar(100) NOT NULL,
   `timestamp` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  KEY (`timestamp`, `password`)
+  KEY `pwd_idx` (`timestamp`, `password`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `clients` (
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `input` (
   `input` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `session` (`session`,`timestamp`,`realm`),
-  KEY (`timestamp`, `input`)
+  KEY `input_idx` (`timestamp`, `input`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `commands` (
@@ -61,9 +61,10 @@ CREATE TABLE IF NOT EXISTS `sessions` (
   `geohash` varchar(30),
   PRIMARY KEY (`id`),
   KEY `starttime` (`starttime`, `sensor`),
-  KEY (`starttime`, `ip`),
-  KEY (`starttime`, `country_name`),
-  KEY (`starttime`, `org`)
+  KEY `ip_idx` (`starttime`, `ip`),
+  KEY `cname_idx` (`starttime`, `country_name`),
+  KEY `ccode_idx` (`starttime`, `country_iso_code`),
+  KEY `org_idx` (`starttime`, `org`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `ttylog` (
